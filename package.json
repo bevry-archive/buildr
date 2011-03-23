@@ -31,7 +31,7 @@
 	},
 	"licenses": [
 		{
-			"type": "MIT"
+			"type": "MIT",
 			"url": "http://creativecommons.org/licenses/MIT/"
 		}
 	],
@@ -50,6 +50,9 @@
 	},
 	"directories": {
 		"lib": "./lib/buildr"
+	},
+	"bin": {
+		"buildr": "./bin/buildr"
 	},
 	"main": "./lib/buildr"
 }
