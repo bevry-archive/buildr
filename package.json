@@ -1,6 +1,6 @@
 {
 	"name": "buildr",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "The JavaScript Project Buildr. Built with Node.js and used by Aloha Editor and History.js",
 	"homepage": "https://github.com/balupton/buildr",
 	"keywords": [
@@ -40,12 +40,10 @@
 			"url": "http://creativecommons.org/licenses/MIT/"
 		}
 	],
-	"repositories": [
-		{
-			"type": "git",
-			"url": "http://github.com/balupton/buildr.git"
-		}
-	],
+	"repository" : {
+		"type" : "git",
+		"url" : "http://github.com/balupton/buildr.git"
+	},
 	"dependencies": {
 	   "uglify-js": ">=0.0.1",
 	   "less": ">=0.0.1"
