@@ -1,8 +1,8 @@
 {
 	"name": "buildr",
-	"version": "0.1.0",
-	"description": "The JavaScript Project Buildr",
-	"author": "Benjamin Lupton <b@lupton.cc>",
+	"version": "0.1.1",
+	"description": "The JavaScript Project Buildr. Built with Node.js and used by Aloha Editor and History.js",
+	"homepage": "https://github.com/balupton/buildr",
 	"keywords": [
 		"javascript",
 		"buildr",
@@ -12,6 +12,11 @@
 		"minify",
 		"bundle"
 	],
+	"author": {
+		"name": "Benjamin Lupton",
+		"email": "b@lupton.cc",
+		"web": "http://balupton.com"
+	},
 	"maintainers": [
 		{
 			"name": "Benjamin Lupton",
@@ -46,7 +51,7 @@
 	   "less": ">=0.0.1"
 	},
 	"engines" : {
-		"node": ">=0.1.9"
+		"node": ">=0.4.0"
 	},
 	"directories": {
 		"lib": "./lib/buildr"
