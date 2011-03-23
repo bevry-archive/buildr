@@ -1,0 +1,55 @@
+{
+	"name": "buildr",
+	"version": "0.1.0",
+	"description": "The JavaScript Project Buildr",
+	"author": "Benjamin Lupton <b@lupton.cc>",
+	"keywords": [
+		"javascript",
+		"buildr",
+		"package",
+		"compile",
+		"compress",
+		"minify",
+		"bundle"
+	],
+	"maintainers": [
+		{
+			"name": "Benjamin Lupton",
+			"email": "b@lupton.cc",
+			"web": "http://balupton.com"
+		}
+	],
+	"contributors": [
+		{
+			"name": "Benjamin Lupton",
+			"email": "b@lupton.cc",
+			"web": "http://balupton.com"
+		}
+	],
+	"bugs": {
+		"web": "https://github.com/balupton/buildr/issues"
+	},
+	"licenses": [
+		{
+			"type": "MIT"
+			"url": "http://creativecommons.org/licenses/MIT/"
+		}
+	],
+	"repositories": [
+		{
+			"type": "git",
+			"url": "http://github.com/balupton/buildr.git"
+		}
+	],
+	"dependencies": {
+	   "uglify-js": ">=0.0.1",
+	   "less": ">=0.0.1"
+	},
+	"engines" : {
+		"node": ">=0.1.9"
+	},
+	"directories": {
+		"lib": "./lib/buildr"
+	},
+	"main": "./lib/buildr"
+}
