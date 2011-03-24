@@ -46,7 +46,8 @@
 	},
 	"dependencies": {
 	   "uglify-js": ">=0.0.1",
-	   "less": ">=0.0.1"
+	   "less": ">=0.0.1",
+	   "pulverizr": ">=0.5.1"
 	},
 	"engines" : {
 		"node": ">=0.4.0"
