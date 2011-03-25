@@ -35,16 +35,19 @@ Buildr does not require any configuration by default, but if you would like to c
 - `subpackages`: an array; containing the locations of each subpackage to compress and bundle
 
 - `files`: an object
-	- `js`: an array; of javascript files to compress and bundle
-	- `css`: an array; of css files to compress and bundle
+	- `js`: a boolean value or array; of javascript files to compress and bundle
+	- `css`: a boolean value or array; of css files to compress and bundle
+	- `img`: a boolean value or array; of css files to compress and bundle
 
 - `templates`: an object
-	- `out-bundle-header.js`: a file path; to the header for the out bundled file
-	- `out-bundle-footer.js`: a file path; to the footer for the out bundled file
-	- `src-bundle-item.js`: a file path; to the replace string for each out bundled file
-	- `src-bundle-header.js`: a file path; to the header for the src bundled file
-	- `src-bundle-footer.js`: a file path; to the footer for the src bundled file
-	- `src-bundle-item.js`: a file path; to the replace string for each src bundled file
+	- `out_bundle_header.js`: a file path; to the header for the out bundled file
+	- `out_bundle_footer.js`: a file path; to the footer for the out bundled file
+	- `out_bundle_item.js`: a file path; to the replace string for each out bundled file
+	- `out_bundle_subpackage.js`: a file path; to the replace string for each out bundled subpackage
+	- `src_bundle_header.js`: a file path; to the header for the src bundled file
+	- `src_bundle_footer.js`: a file path; to the footer for the src bundled file
+	- `src_bundle_item.js`: a file path; to the replace string for each src bundled file
+	- `src_bundle_subpackage.js`: a file path; to the replace string for each src bundled subpackage
 
 
 ## License
