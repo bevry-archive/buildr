@@ -60,6 +60,4 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 1. Make it asynchronous
 2. Turn the CSS minifier into it's own project
-3. Add image optimisation
-4. Support the sweet package json file above
 
