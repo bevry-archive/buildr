@@ -1,6 +1,6 @@
 {
 	"name": "buildr",
-	"version": "0.2.2",
+	"version": "0.2.3",
 	"description": "The JavaScript Project Buildr. Built with Node.js and used by Aloha Editor and History.js",
 	"homepage": "https://github.com/balupton/buildr.npm",
 	"keywords": [
@@ -47,7 +47,7 @@
 	"dependencies": {
 	   "uglify-js": ">=0.0.1",
 	   "less": ">=0.0.1",
-	   "pulverizr": ">=0.5.1"
+	   "pulverizr-bal": ">=0.5.2"
 	},
 	"engines" : {
 		"node": ">=0.4.0"
