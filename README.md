@@ -5,7 +5,7 @@
 
 	npm install buildr
 
-__Note: if you would like to be able to compress image files, you will also need to follow the installation instructions [here](https://github.com/bentruyman/pulverizr/blob/master/pulverizr.js)__
+__Note: if you would like to be able to compress image files, you will also need to follow the installation instructions [here](https://github.com/balupton/pulverizr)__
 
 
 ## Usage
