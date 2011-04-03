@@ -23,6 +23,11 @@ Buildr does not require any configuration by default, but if you would like to c
 	- `img`: a boolean value
 	- `html`: a boolean value
 
+- `check`: a boolean value or an object, if an object:
+	- `js`: a boolean value or a javascript filename
+	- `css`: a boolean value or a css filename
+	- `jsOptions`: a object
+
 - `bundle`: a boolean value or an object, if an object:
 	- `js`: a boolean value or a javascript filename
 	- `css`: a boolean value or a css filename
