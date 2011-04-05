@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Prepare
 var
 	Buildr = require('buildr').Buildr,
