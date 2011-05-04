@@ -106,7 +106,7 @@ If you would like configure it even further, the following options are available
 - `files`: an object
 	- `js`: a boolean value or array; of javascript files to compress and bundle
 	- `css`: a boolean value or array; of css files to compress and bundle
-	- `img`: a boolean value or array; of css files to compress and bundle
+	- `img`: a boolean value or array; of image files to compress and bundle
 
 - `templates`: an object
 	- `out_bundle_header.js`: a file path; to the header for the out bundled file
