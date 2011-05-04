@@ -50,6 +50,7 @@
 	
 	- On Yum Linux
 			
+			npm -g install pulverizr-bal
 			sudo yum -y install gifsicle libjpeg-progs optipng pngcrush
 
 
@@ -62,7 +63,24 @@ In the javascript program which you would like to buldr, run the following in te
 
 ## Configuration
 
-Buildr does not require any configuration by default, but if you would like to configure it you can create a `package.json` file which contains the following keys a `buildr` key:
+Buildr does not require any configuration by default, but if you would like to configure it you can create a `package.json` file which should can look something like this:
+
+``` javascript
+ {
+    "name": "my-project",
+    "buildr": {
+        "compress": true,
+        "bundle": true,
+        "directories": {
+            "out": "./out",
+            "src": "./src"
+        },
+        "files": true
+ }
+```
+
+
+If you would like to further customise the build process, the following is available to you under the `buildr` key:
 
 - `compress`: a boolean value or an object, if an object:
 	- `js`: a boolean value
@@ -99,22 +117,6 @@ Buildr does not require any configuration by default, but if you would like to c
 	- `src_bundle_footer.js`: a file path; to the footer for the src bundled file
 	- `src_bundle_item.js`: a file path; to the replace string for each src bundled file
 	- `src_bundle_subpackage.js`: a file path; to the replace string for each src bundled subpackage
-
-So your `package.json` file should at least look something like this:
-
-``` javascript
- {
-    "name": "my-project",
-    "buildr": {
-        "compress": true,
-        "bundle": true,
-        "directories": {
-            "out": "./out",
-            "src": "./src"
-        },
-        "files": true
- }
-```
 
 For further reference you can refer to the [History.js](https://github.com/balupton/history.js) [package.json file](https://github.com/balupton/history.js/raw/dev/package.json) which utilises simple bundling and compression, and the [Aloha Editor](https://github.com/alohaeditor/Aloha-Editor) [package.json file](https://github.com/alohaeditor/Aloha-Editor/raw/0.10/package.json) which utilises bundling for both the src and out packages, subpackages and javascript+css+image compression.
 
