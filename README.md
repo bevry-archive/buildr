@@ -63,7 +63,7 @@ In the javascript program which you would like to buldr, run the following in te
 
 ## Configuration
 
-Buildr does not require any configuration by default, but if you would like to configure it you can create a `package.json` file which should can look something like this:
+Buildr does not require any configuration by default, but if you would like to configure it you can create a `package.json` file which can look something like this:
 
 ``` javascript
  {
@@ -80,7 +80,7 @@ Buildr does not require any configuration by default, but if you would like to c
 ```
 
 
-If you would like to further customise the build process, the following is available to you under the `buildr` key:
+If you would like configure it even further, the following options are available under the `buildr` key:
 
 - `compress`: a boolean value or an object, if an object:
 	- `js`: a boolean value
