@@ -3,68 +3,33 @@
 
 ## Installation
 
-1. To install buildr, you first need Node.js and NPM installed, if you do not have them installed run the following:
+1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
 
-	- On OSX
-		
-		1. [Install Git](http://git-scm.com/download)
-
-		2. [Install Xcode](http://itunes.apple.com/us/app/xcode/id422352214?mt=12&ls=1)
-
-		3. Run the following in terminal
-			
-				sudo chown -R $USER /usr/local
-				git clone https://github.com/joyent/node.git && cd node && git checkout v0.4.7 && ./configure && make && sudo make install && cd .. && rm -Rf node
-				curl http://npmjs.org/install.sh | sh
-		
-	- On Apt Linux (e.g. Ubuntu)
-
-			sudo chown -R $USER /usr/local
-			sudo apt-get update && sudo apt-get install curl build-essential openssl libssl-dev git
-			git clone https://github.com/joyent/node.git && cd node && git checkout v0.4.7 && ./configure && make && sudo make install && cd .. && rm -Rf node
-			curl http://npmjs.org/install.sh | sh
-	
-	- On Yum Linux (e.g. Fedora)
-			
-			sudo chown -R $USER /usr/local
-			sudo yum -y install tcsh scons gcc-c++ glibc-devel openssl-devel git
-			git clone https://github.com/joyent/node.git && cd node && git checkout v0.4.7 && ./configure && make && sudo make install && cd .. && rm -Rf node
-			curl http://npmjs.org/install.sh | sh
-
-	- On Windows
-
-		Node.js is not currently available for direct stable use on Windows; the following instructions will run you through setting up a Ubuntu (Apt Linux) Virtual Machine allowing you to run Node.js stably (albeit indirectly) on Windows.
-
-		1. [Download Ubuntu Disk Image](http://d235whtva55mz9.cloudfront.net/ubuntu-11.04-desktop-i386.iso)
-
-		2. [Download & Install VMWare Player](http://www.vmware.com/products/player/overview.html)
-
-		3. Open VMWare Player and Create/Install a Virtual Machine using the Ubuntu Disk Image as the Install Media
-
-		4. With the new Ubuntu Virtual Machine, follow the Apt Linux instructions.
-
-
-2. To install buildr globally with NPM v1
+2. Install Buildr
 
 		npm -g install buildr
 
-3. If you would also like to enable image compression, run the following
+3. Optional. If you would also like to support image compression:
 
 	- On OSX
-
-			npm -g install pulverizr-bal
+		
 			ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
+			npm -g install pulverizr-bal
 			brew install gifsicle libjpeg optipng pngcrush
 	
 	- On Apt Linux
-			
+		
 			npm -g install pulverizr-bal
 			sudo apt-get update && sudo apt-get install gifsicle libjpeg-progs optipng pngcrush
 	
 	- On Yum Linux
-			
+		
 			npm -g install pulverizr-bal
 			sudo yum -y install gifsicle libjpeg-progs optipng pngcrush
+
+	- On Windows
+
+		You're out of luck
 
 
 ## Usage
