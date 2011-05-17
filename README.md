@@ -9,12 +9,12 @@
 
 		npm -g install buildr
 
-3. Optional. If you would also like to support image compression:
+3. Optional. If you would also like to support image compression
 
 	- On OSX
 		
-			ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
 			npm -g install pulverizr-bal
+			ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
 			brew install gifsicle libjpeg optipng pngcrush
 	
 	- On Apt Linux
