@@ -1,15 +1,19 @@
-# Welcome to Buildr. The JavaScript Package Buildr.
+# Welcome to Buildr. The JavaScript Project Checker, Bundler, & Compressor.
 
 
 ## Installation
 
 1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
 
-2. Install Buildr
+1. Install CoffeeScript
+		
+		npm -g install coffeescript
+
+1. Install Buildr
 
 		npm -g install buildr
 
-3. Optional. If you would also like to support image compression
+1. Optional. If you would also like to support image compression
 
 	- On OSX
 		
@@ -98,7 +102,7 @@ If you would like configure it even further, the following options are available
 
 For further reference you can refer to the [History.js](https://github.com/balupton/history.js) [package.json file](https://github.com/balupton/history.js/raw/dev/package.json) which utilises simple bundling and compression, and the [Aloha Editor](https://github.com/alohaeditor/Aloha-Editor) [package.json file](https://github.com/alohaeditor/Aloha-Editor/raw/0.10/package.json) which utilises bundling for both the src and out packages, subpackages and javascript+css+image compression.
 
-
+s
 ## License
 
 Licensed under the [MIT License](http://creativecommons.org/licenses/MIT/)
@@ -109,4 +113,18 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 1. Make it asynchronous
 2. Turn the CSS minifier into it's own project
+
+
+## History
+
+- v0.3 May 31, 2011
+	- Moved to CoffeeScript
+	- Made it Asynchronous
+	- Better CSS Bundling and Compression
+
+- v0.2 April 2, 2011
+	- Stable :)
+
+- v0.1 March 23, 2011
+	- Initial Work
 
