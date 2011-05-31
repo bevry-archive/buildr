@@ -240,7 +240,7 @@ class Buildr
 		# Log
 		console.log "\nCompilation complete"
 	
-	
+
 	# Check JS files
 	checkJs: ->
 		# Prepare
@@ -307,3 +307,114 @@ class Buildr
 			if config.check[type] then checkType()
 	
 
+	# Bundle data
+	bundleData: (type,adjustFileData) ->
+		# Prepare
+		config = @config
+		srcDir = config.directories.src
+		outDir = config.directories.out
+
+		# Extract
+		bundleSrcPath = srcDir + '/' + config.bundle[type]
+		bundleOutPath = outDir + '/' + config.bundle[type]
+		bundleSrcData = config.templateContent['src_bundle_header.'+type]
+		bundleOutData = config.templateContent['out_bundle_header.'+type]
+
+		# Subpackages
+		config.subpackages.forEach (subpackage) =>
+			# Check
+			unless subpackage then return
+
+			# Log
+			console.log 'Adding: ' + path.basename(subpackage)
+
+			# Templates
+			srcTemplate = config.templateContent['src_bundle_subpackage.'+type]
+			outTemplate = config.templateContent['out_bundle_subpackage.'+type]
+
+			# Ammend
+			bundleSrcData += srcTemplate
+				.replace '%NAME%', path.basename(subpackage)
+			bundleOutData += outTemplate
+				.replace '%NAME%', path.basename(subpackage)
+
+		# Bundle
+		config.files[type].forEach (filePath) =>
+			# Log
+			console.log 'Bundled: '+filePath
+
+			# Extract
+			fileSrcPath = @expandPath filePath, config.rootPath, srcDir
+			fileOutPath = @expandPath filePath, config.rootPath, outDir
+			fileData = fs.readfileSync(fileOutPath).toString()
+
+			# Adjust
+			if adjustFileData
+				fileData = adjustFileData fileData, fileSrcPath, fileOutPath
+
+			# Templates
+			srcTemplate = config.templateContent['src_bundle_item.'+type]
+			outTemplate = config.templateContent['out_bundle_item.'+type]
+
+			# Ammend
+			bundleSrcData += srcTemplate
+				.replace '%DATA%', fileData
+				.replace '%URL%', filePath
+			bundleOutData += outTemplate
+				.replace '%DATA%', fileData
+				.replace '%URL%', filePath
+		
+		# Ammend
+		bundleSrcData += config.templateContent['src_bundle_footer.'+type]
+		bundleOutData += config.templateContent['out_bundle_footer.'+type]
+
+		# Write files
+		console.log '\nBundling '+type+' files to: '+bundleOutPath
+		fs.writeFileSync bundleOutPath, bundleOutData
+		if config.bundle.src
+			console.log 'Bundling '+type+' files to: '+bundleSrcPath
+			fs.writeFileSync bundleSrcPath, bundleSrcData
+		
+		# Add Files
+		config.files[type] = []
+		config.files[type].push @shrinkPath bundleOutPath
+
+	
+	# Bundle all JS files
+	bundleJs: ->
+		# Bundle
+		@bundleData 'js'
+	
+	# Bundle all CSS files
+	bundleCss: ->
+		# Prepare
+		config = @config
+		srcDir = config.directories.src
+
+		# Bundle
+		@bundleData(
+			# Type
+			'css',
+			# File
+			(fileData,fileSrcPath) ->
+				parentSrcPath = fileSrcPath.replace(/[\/\\][^\/\\]+$/,'')
+				result = fileData.replace(
+					/url\(([^\)]+)\)/g,
+					(str, p1, offset) ->
+						# Trim quotes
+						url = p1.replace /[\'\"]/g, ''
+
+						# Update url
+						if url[0] isnt '/' and !/\:/.test(url)
+							url = fs.realpathSync(parentSrcPath+'/'+url)
+								.replace(srcDir+'/','')
+						}
+
+						# Replace with new url
+						return 'url(\''+url+'\')'
+					}
+				)
+				return result
+			# Bundle
+			(bundle) ->
+				
