@@ -53,10 +53,10 @@
 		"node": ">=0.4.0"
 	},
 	"directories": {
-		"lib": "./lib/buildr"
+		"lib": "lib"
 	},
 	"bin": {
-		"buildr": "./bin/buildr.js"
+		"buildr": "./bin/buildr.coffee"
 	},
-	"main": "./lib/buildr"
+	"main": "./lib/buildr.coffee"
 }

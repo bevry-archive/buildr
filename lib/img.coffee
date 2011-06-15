@@ -1,6 +1,7 @@
 # Require
 util = require 'bal-util'
 pulverizr = null
+cwd = process.cwd()
 
 # Buildr Image Component
 module.exports =
@@ -8,16 +9,20 @@ module.exports =
 	# Compress a image file
 	compressFile: (filePath, next) ->
 		# Compress
-		console.log("Compressed: "+filePath);
-		pulverizr.compress(filePath,{
-			"quiet": true
-		});
+		console.log 'Compressing:', filePath
+		pulverizr.compress filePath, {
+			'quiet': true
+		}
 
 		# Forward
 		return next false
 
 	# Compress a series of image files
-	compress: ({files},next) ->
+	compress: ({files,dir},next) ->
+		# Prepare
+		files or= []
+		dir or= cwd
+
 		# Load Pulverizr
 		try {
 			pulverizr = require 'pulverizr-bal'
@@ -28,7 +33,7 @@ module.exports =
 		}
 
 		# Compress Files
-		util.scandirSafe(
+		util.scan(
 			# Directory
 			files
 			# File Action
