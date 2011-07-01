@@ -85,7 +85,7 @@ If you'd prefer to have the `srcPath` and the `outPath` the same, you can do tha
 
 ### As a Module
 
-1. Installation
+1. Install Buildr Locally
 
 		npm install buildr
 
@@ -124,6 +124,7 @@ To install a specify version, say version 0.2, run `npm install buildr@0.2`
 	- Needs auto file finding
 	- Needs jshint checking on `.js` files (not `.coffee` files)
 	- Needs no-config version
+	- Add unit tests for the first time
 
 - v0.3 May 31, 2011
 	- Exploration into better architectures
