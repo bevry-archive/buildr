@@ -1,7 +1,9 @@
-# Welcome to Buildr. The JavaScript Project Checker, Bundler, & Compressor.
+# Welcome to Buildr
+
+The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)
 
 
-## Installation
+## Install
 
 1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
 
@@ -9,122 +11,126 @@
 		
 		npm -g install coffeescript
 
-1. Install Buildr
 
-		npm -g install buildr
+## Use
 
-1. Optional. If you would also like to support image compression
+### Configuration
 
-	- On OSX
-		
-			npm -g install pulverizr-bal
-			ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
-			brew install gifsicle libjpeg optipng pngcrush
-	
-	- On Apt Linux
-		
-			npm -g install pulverizr-bal
-			sudo apt-get update && sudo apt-get install gifsicle libjpeg-progs optipng pngcrush
-	
-	- On Yum Linux
-		
-			npm -g install pulverizr-bal
-			sudo yum -y install gifsicle libjpeg-progs optipng pngcrush
+Before you use Buildr, you must specify some configuration for it. Here is an example:
 
-	- On Windows
-
-		You're out of luck
-
-
-## Usage
-
-In the javascript program which you would like to buldr, run the following in terminal:
-
-	buildr .
-
-
-## Configuration
-
-Buildr does not require any configuration by default, but if you would like to configure it you can create a `package.json` file which can look something like this:
-
-``` javascript
+``` coffeescript
  {
-    "name": "my-project",
-    "buildr": {
-        "compress": true,
-        "bundle": true,
-        "directories": {
-            "out": "./out",
-            "src": "./src"
-        },
-        "files": true
+ 	srcPath: 'src'
+ 	outPath: 'out'
+	outStylePath: 'out/styles.css'
+	outScriptPath: 'out/scripts.js'
+ 	scripts: [
+ 		'scripts/file1.js'
+ 		'scripts/file2.coffee'
+ 	]
+ 	styles: [
+ 		'styles/file1.css'
+ 		'styles/file2.less'
+ 	]
+	compress: true
  }
 ```
 
+Providing you have the following directory structure:
 
-If you would like configure it even further, the following options are available under the `buildr` key:
+- app
+	- src
+		- scripts
+			- file1.js
+			- file2.coffee
+		- styles
+			- file1.css
+			- file2.less
 
-- `compress`: a boolean value or an object, if an object:
-	- `js`: a boolean value
-	- `css`: a boolean value
-	- `img`: a boolean value
-	- `html`: a boolean value
+Using that configuration with buildr will copy `app/src` to `app/out` and generate `out/styles.css` from the styles and generate `out/scripts.js` from the scripts - both of which would be compressed.
 
-- `check`: a boolean value or an object, if an object:
-	- `js`: a boolean value; whether or not we should run javascript through the JSLint checker before building
-	- `jsOptions`: an object; to pass to the JSLint checker
+If you'd prefer to have the `srcPath` and the `outPath` the same, you can do that too.
 
-- `bundle`: a boolean value or an object, if an object:
-	- `js`: a boolean value or a javascript filename; what should the bundled Javascript file be called?
-	- `css`: a boolean value or a css filename; what should hte bundled CSS file be called?
-	- `src`: a boolean value; whether or not we should bundle the source files too
 
-- `directories`: an object
-	- `out`: a directory path; of where the compiled files will go
-	- `src`: a directory path; of where source files come from
+### Run
 
-- `subpackages`: an array; containing the locations of each subpackage to compress and bundle
+#### As a Command Line Tool
 
-- `files`: an object
-	- `js`: a boolean value or array; of javascript files to compress and bundle
-	- `css`: a boolean value or array; of css files to compress and bundle
-	- `img`: a boolean value or array; of image files to compress and bundle
+1. Installation
 
-- `templates`: an object
-	- `out_bundle_header.js`: a file path; to the header for the out bundled file
-	- `out_bundle_footer.js`: a file path; to the footer for the out bundled file
-	- `out_bundle_item.js`: a file path; to the replace string for each out bundled file
-	- `out_bundle_subpackage.js`: a file path; to the replace string for each out bundled subpackage
-	- `src_bundle_header.js`: a file path; to the header for the src bundled file
-	- `src_bundle_footer.js`: a file path; to the footer for the src bundled file
-	- `src_bundle_item.js`: a file path; to the replace string for each src bundled file
-	- `src_bundle_subpackage.js`: a file path; to the replace string for each src bundled subpackage
+	1. Install Buildr Globally
 
-For further reference you can refer to the [History.js](https://github.com/balupton/history.js) [package.json file](https://github.com/balupton/history.js/raw/dev/package.json) which utilises simple bundling and compression, and the [Aloha Editor](https://github.com/alohaeditor/Aloha-Editor) [package.json file](https://github.com/alohaeditor/Aloha-Editor/raw/0.10/package.json) which utilises bundling for both the src and out packages, subpackages and javascript+css+image compression.
+			npm -g install buildr
 
-s
+	1. If you also want image compression, do this:
+
+		- On OSX
+			
+				npm -g install pulverizr
+				ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
+				brew install gifsicle libjpeg optipng pngcrush
+		
+		- On Apt Linux
+			
+				npm -g install pulverizr
+				sudo apt-get update && sudo apt-get install gifsicle libjpeg-progs optipng pngcrush
+		
+		- On Yum Linux
+			
+				npm -g install pulverizr
+				sudo yum -y install gifsicle libjpeg-progs optipng pngcrush
+
+2. Stick your configuration in `app/buildr.cson`
+
+3. Within your app root, run `buildr`
+
+
+#### As a Module
+
+1. Installation
+
+		npm install buildr
+
+2. Code
+
+	``` coffeescript
+	buildr = require 'buildr'
+	config = {} # your configuration
+	myBuildr = buildr.createInstance(config)
+	myBuildr.process (err) ->
+		throw err if err
+	```
+
+
 ## License
 
 Licensed under the [MIT License](http://creativecommons.org/licenses/MIT/)
 Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 
-## Todo
-
-1. Make it asynchronous
-2. Turn the CSS minifier into it's own project
-
-
 ## History
 
+### Stability:
+
+- Current Stable Release: 0.2
+- Current Beta Release: 0.4
+
+### Changelog:
+
+- v0.4 July 1, 2011
+	- Extremely Simplified
+	- Needs javascript compression re-added
+	- Needs image compression re-added
+	- Needs auto file finding
+	- Needs jshint checking on `.js` files (not `.coffee` files)
+	- Needs no-config version
+
 - v0.3 May 31, 2011
-	- Moved to CoffeeScript
-	- Made it Asynchronous
-	- Better CSS Bundling and Compression
+	- Exploration into better architectures
 
 - v0.2 April 2, 2011
-	- Stable :)
+	- Initial Release
 
 - v0.1 March 23, 2011
-	- Initial Work
+	- Initial Commit
 
