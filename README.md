@@ -110,8 +110,8 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ### Stability
 
-- Current Stable Release: 0.2 - [source](https://github.com/balupton/buildr.npm/tree/0.2)
-- Current Beta Release: 0.4 - [source](https://github.com/balupton/buildr.npm/tree/0.4)
+- [Current Stable Release: 0.2](https://github.com/balupton/buildr.npm/tree/0.2)
+- [Current Beta Release: 0.4](https://github.com/balupton/buildr.npm/tree/0.4)
 
 To install a specify version, say version 0.2, run `npm install buildr@0.2`
 
