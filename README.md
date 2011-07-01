@@ -12,9 +12,7 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 		npm -g install coffeescript
 
 
-## Use
-
-### Configuration
+## Configure
 
 Before you use Buildr, you must specify some configuration for it. Here is an example:
 
@@ -36,9 +34,9 @@ Before you use Buildr, you must specify some configuration for it. Here is an ex
  }
 ```
 
-Providing you have the following directory structure:
+Which works great for the following app structure:
 
-- app
+> - app
 	- src
 		- scripts
 			- file1.js
@@ -52,9 +50,9 @@ Using that configuration with buildr will copy `app/src` to `app/out` and genera
 If you'd prefer to have the `srcPath` and the `outPath` the same, you can do that too.
 
 
-### Run
+## Run
 
-#### As a Command Line Tool
+### As a Command Line Tool
 
 1. Installation
 
@@ -85,7 +83,7 @@ If you'd prefer to have the `srcPath` and the `outPath` the same, you can do tha
 3. Within your app root, run `buildr`
 
 
-#### As a Module
+### As a Module
 
 1. Installation
 
