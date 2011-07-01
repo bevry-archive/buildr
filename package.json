@@ -1,16 +1,18 @@
 {
 	"name": "buildr",
-	"version": "0.4.0",
+	"version": "0.4.4",
 	"description": "The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)",
 	"homepage": "https://github.com/balupton/buildr.npm",
 	"keywords": [
 		"javascript",
-		"buildr",
+		"builder",
 		"package",
 		"compile",
 		"compress",
 		"minify",
-		"bundle"
+		"bundle",
+		"merge",
+		"lint"
 	],
 	"author": {
 		"name": "Benjamin Lupton",
@@ -45,9 +47,10 @@
 		"url" : "http://github.com/balupton/buildr.npm.git"
 	},
 	"dependencies": {
-	   "uglify-js": ">=0.0.1",
-	   "less": ">=0.0.1",
-	   "jshint": ">=0.0.1"
+		"less": "1.1",
+		"coffee-script": "1.1",
+		"bal-util": "0.4",
+		"cson": "0.1"
 	},
 	"engines" : {
 		"node": ">=0.4.0"
