@@ -108,12 +108,14 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ## History
 
-### Stability:
+### Stability
 
-- Current Stable Release: 0.2
-- Current Beta Release: 0.4
+- Current Stable Release: 0.2 - [source](https://github.com/balupton/buildr.npm/tree/0.2)
+- Current Beta Release: 0.4 - [source](https://github.com/balupton/buildr.npm/tree/0.4)
 
-### Changelog:
+To install a specify version, say version 0.2, run `npm install buildr@0.2`
+
+### Changelog
 
 - v0.4 July 1, 2011
 	- Extremely Simplified
