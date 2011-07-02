@@ -7,7 +7,7 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 
 1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
 
-1. Install CoffeeScript
+1. Install [CoffeeScript](http://jashkenas.github.com/coffee-script/)
 		
 		npm -g install coffeescript
 
@@ -64,18 +64,15 @@ If you'd prefer to have the `srcPath` and the `outPath` the same, you can do tha
 
 		- On OSX
 			
-				npm -g install pulverizr
 				ruby -e "$(curl -fsSLk https://gist.github.com/raw/323731/install_homebrew.rb)"
 				brew install gifsicle libjpeg optipng pngcrush
 		
 		- On Apt Linux
 			
-				npm -g install pulverizr
 				sudo apt-get update && sudo apt-get install gifsicle libjpeg-progs optipng pngcrush
 		
 		- On Yum Linux
 			
-				npm -g install pulverizr
 				sudo yum -y install gifsicle libjpeg-progs optipng pngcrush
 
 2. Stick your configuration in `app/buildr.cson`
@@ -124,7 +121,7 @@ To install a specify version, say version 0.2, run `npm install buildr@0.2`
 	- Needs auto file finding
 	- Needs jshint checking on `.js` files (not `.coffee` files)
 	- Needs no-config version
-	- Add unit tests for the first time
+	- Needs unit tests for the first time
 
 - v0.3 May 31, 2011
 	- Exploration into better architectures
