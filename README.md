@@ -54,6 +54,8 @@ If you'd prefer to have the `srcPath` and the `outPath` the same, you can do tha
 
 ### As a Command Line Tool
 
+_Note: this option is currently disabled due to [this bug](https://github.com/balupton/buildr.npm/issues/8)_
+
 1. Installation
 
 	1. Install Buildr Globally
