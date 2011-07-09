@@ -23,7 +23,7 @@ class Buildr
 		# Prepare
 		tasks = new util.Group (err) ->
 			next err
-		tasks.total += 2
+		tasks.total += 3
 
 		# Expand configuration paths
 		@expandPaths (err) =>
@@ -32,6 +32,10 @@ class Buildr
 			# Copy srcPath to outPath
 			@cpSrcToOut (err) =>
 				return next err if err
+
+				# Generate src loader file
+				@generateSrcLoaderFile (err) ->
+					tasks.complete err
 
 				# Generate out script file
 				@generateOutScriptFile (err) ->
@@ -87,6 +91,73 @@ class Buildr
 				# Next
 				next err
 	
+	# Generate src loader file
+	# next(err)
+	generateSrcLoaderFile: (next) ->
+		# Check
+		unless @config.srcLoaderPath?
+			next false
+		
+		# Prepare
+		templates = {}
+		srcLoaderData = ''
+		srcLoaderPath = @config.srcLoaderPath
+		loadedInTemplates = null
+
+		# Loaded in Templates
+		templateTasks = new util.Group (err) =>
+			# Check
+			next err if err
+
+			# Stringify scripts
+			srcLoaderData += "scripts = [\n"
+			for script in @config.scripts
+				srcLoaderData += "\t'#{script}'\n"
+			srcLoaderData += "\]\n\n"
+
+			# Stringify styles
+			srcLoaderData += "styles = [\n"
+			for style in @config.styles
+				srcLoaderData += "\t'#{style}'\n"
+			srcLoaderData += "\]\n\n"
+			
+			# Append Templates
+			srcLoaderData += templates.srcLoader+"\n\n"+templates.srcLoaderHeader
+
+			# Write in coffee first for debugging
+			fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+				# Check
+				next err if err
+
+				# Compile Script
+				srcLoaderData = coffee.compile(srcLoaderData)
+
+				# Now write in javascript
+				fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+					# Check
+					next err if err
+
+					# Good
+					next false
+
+		# Total Template Tasks
+		templateTasks.total = if @config.srcLoaderHeader then 1 else 2
+
+		# Load srcLoader Template
+		fs.readFile __dirname+'/templates/srcLoader.coffee', (err,data) ->
+			return templateTasks.exit err if err
+			templates.srcLoader = data.toString()
+			templateTasks.complete err
+		
+		# Load srcLoaderHeader Template
+		if @config.srcLoaderHeader
+			templates.srcLoaderHeader = @config.srcLoaderHeader
+		else
+			fs.readFile __dirname+'/templates/srcLoaderHeader.coffee', (err,data) ->
+				return templateTasks.exit err if err
+				templates.srcLoaderHeader = data.toString()
+				templateTasks.complete err
+
 	# Generate out style file
 	# next(err)
 	generateOutStyleFile: (next) ->
