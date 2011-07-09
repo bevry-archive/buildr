@@ -3,7 +3,7 @@ fs = require 'fs'
 path = require 'path'
 util = require 'bal-util'
 coffee = require 'coffee-script'
-less = require 'less'
+less = require 'less-bal'
 cwd = process.cwd()
 
 # -------------------------------------
