@@ -23,33 +23,33 @@ window.Buildr ?= class
 		host = (document.location.hostname||document.location.host)
 		protocol = document.location.protocol
 		rootUrl = "#{protocol}//#{host}"
-		
-		# Port	
+
+		# Port
 		if document.location.port
 			rootUrl += ':'+document.location.port
 		rootUrl += '/'
 
 		# Return
 		rootUrl
-	
+
 	# Load Styles and Scripts
 	load: (next) ->
 		me = @
 		me.loadStyle ->
 			me.loadScript ->
 				next() if next
-	
+
 	# Script Loader
 	loadScriptIndex: 0
 	loadScript: (next) ->
 		# Prepare
 		me = @
 		scriptSrc = @baseUrl + @scripts[@loadScriptIndex]
-		scriptSrc += '?js' if @serverCompilation?
+		scriptSrc += '?js' if @serverCompilation
 		scriptLoaded = ->
-			if this.readyState? and this.readyState isnt 'complete'
+			if @readyState? and @readyState isnt 'complete'
 				return
-			if this.src? and this.src isnt scriptSrc
+			if @src? and @src isnt scriptSrc
 				return
 			++me.loadScriptIndex
 			me.loadScript next
@@ -82,7 +82,7 @@ window.Buildr ?= class
 		# Prepare
 		me = @
 		styleHref = @baseUrl + @styles[@loadStyleIndex]
-		styleHref += '?css' if @serverCompilation?
+		styleHref += '?css' if @serverCompilation
 		styleLoaded = ->
 			++me.loadStyleIndex
 			me.loadStyle next
