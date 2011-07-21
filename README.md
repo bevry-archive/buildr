@@ -11,7 +11,7 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 		
 		npm -g install coffeescript
 
-1. If you also want image compression, do this:
+1. Install dependencies for image compression
 
 	- On OSX
 		
@@ -43,14 +43,28 @@ Before you use Buildr, you must specify some configuration for it. Here is an ex
 	srcLoaderPath: 'src/loader.js'
 	outStylePath: 'out/styles.css'
 	outScriptPath: 'out/scripts.js'
- 	scripts: [
+	compressOutFiles
+ 	bundleScripts: [
  		'scripts/file1.js'
  		'scripts/file2.coffee'
  	]
- 	styles: [
+ 	bundleStyles: [
  		'styles/file1.css'
  		'styles/file2.less'
  	]
+ 	checkScripts: [
+ 		'scripts/file1.js'
+ 		'scripts/file2.coffee'
+ 	]
+	jshintOptions: {
+		browser: true
+		laxbreak: true
+		boss: true
+		undef: true
+		onevar: true
+		strict: true
+		noarg: true
+	}
  }
 ```
 
@@ -115,20 +129,20 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ## History
 
-### Stability
-
-- [Current Stable Release: 0.2](https://github.com/balupton/buildr.npm/tree/0.2)
-- [Current Beta Release: 0.5](https://github.com/balupton/buildr.npm/tree/0.5)
-
-To install a specific version, say version 0.2, run `npm install buildr@0.2`
-
 ### Changelog
+
+- v0.6 July 21, 2011
+	- Added javascript compression
+	- Added jshint checks
+	- Added image compression
+	- Added css compression
 
 - v0.5 July 9, 2011
 	- Added srcLoader compilation
 
 - v0.4 July 1, 2011
 	- Extremely Simplified
+	- Only supports bundling of js|coffee and css|less files currently
 
 - v0.3 May 31, 2011
 	- Exploration into better architectures
@@ -141,9 +155,6 @@ To install a specific version, say version 0.2, run `npm install buildr@0.2`
 
 ### Todo
 
-- Needs javascript compression re-added
-- Needs image compression re-added
-- Needs auto file finding
-- Needs jshint checking on `.js` files (not `.coffee` files)
+- Needs auto file finding for bundling
 - Needs no-config version
-- Needs unit tests for the first time
+- Needs unit tests
