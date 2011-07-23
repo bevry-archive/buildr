@@ -5,11 +5,24 @@ util = require 'bal-util'
 coffee = require 'coffee-script'
 less = require 'less-bal'
 pulverizr = require 'pulverizr-bal'
+csslint = require('csslint').CSSLint
 jshint = require('jshint').JSHINT
 uglify = require 'uglify-js'
 jsp = uglify.parser
 pro = uglify.uglify
 cwd = process.cwd()
+
+
+
+# =====================================
+# Prototypes
+
+# Checks if an array contains a value
+Array::has or= (value2) ->
+	for value1 in @
+		if value1 is value2
+			return true
+	return false
 
 
 # =====================================
@@ -24,23 +37,29 @@ class Buildr
 		srcPath: false # String
 		outPath: false # String or false
 
-		# Loaders
+		# Checking
+		checkScripts: true # Array or true or false
+		checkStyles: true # Array or true or false
+		jshintOptions: false # Object or false
+		csslintOptions: false # Object or false
+		
+		# Compression (requires outPath)
+		compressScripts: true # Array or true or false
+		compressStyles: true # Array or true or false
+		compressImages: true # Array or true or false
+
+		# Order
+		scriptsOrder: false # Array or true or false
+		stylesOrder: false # Array or true or false
+
+		# Loaders (requires outPath and Order)
 		srcLoaderHeader: false # String or false
 		srcLoaderPath: false # String or false
 
-		# Bundling
-		bundleScripts: false # Array or true or false
-		bundleStyles: false # Array or true or false
+		# Bundling (requires outPath and Order)
 		bundleScriptPath: false # String or false
 		bundleStylePath: false # String or false
-		deleteBundledOutFiles: true # true or false
-
-		# Checking
-		checkScripts: false # Array or true or false
-		jshintOptions: false # Object or false
-		
-		# Compression
-		compressOutFiles: true # true or false
+		deleteBundledFiles: true # true or false
 	}
 
 	# Files to clean
@@ -50,7 +69,17 @@ class Buildr
 	errors: []
 
 	# Constructor
-	constructor: (@config) ->
+	constructor: (config) ->
+		# Prepare
+		config or= {}
+
+		# Apply
+		for own key, value of config
+			@config[key] = value
+		
+		# Completed
+		true
+
 
 	# =====================================
 	# Actions
@@ -78,9 +107,13 @@ class Buildr
 							return next err	 if err
 
 							# Compress outPath
-							@compressOutPath (err) =>
+							@compressFiles (err) =>
 								next err
-		
+	
+
+	# ---------------------------------
+	# Check Configuration
+
 	# Check Configuration
 	# next(err)
 	checkConfiguration: (next) ->
@@ -99,12 +132,14 @@ class Buildr
 
 		# Adjust Atomic Options
 		if @config.srcPath is @config.outPath
-			if @config.deleteBundledOutFiles
-				console.log "Disabled deleteBundledOutFiles as your srcPath and outPath need to be different for that - as otherwise it would delete your source files!"
-				@config.deleteBundledOutFiles = false
-			if @config.compressOutFiles
-				console.log "Disabled compressOutFiles as your srcPath and outPath need to be different for that - as otherwise it would overwrite your source files!"
-				@config.compressOutFiles = false
+			if @config.deleteBundledFiles
+				@config.deleteBundledFiles = false
+			if @config.compressScripts
+				@config.compressScripts = false
+			if @config.compressStyles
+				@config.compressStyles = false
+			if @config.compressImages
+				@config.compressImages = false
 		
 		# Expand srcPath
 		util.expandPath @config.srcPath, cwd, {}, (err,srcPath) =>
@@ -151,39 +186,31 @@ class Buildr
 			@config.bundleScripts = false
 		if @config.bundleStyles is true
 			@config.bundleStyles = false
-		if @config.checkScripts is true
-			@config.checkScripts = false
 
 		# Completed
 		true
 	
+
+	# ---------------------------------
+	# Check Files
+
 	# Check files
 	# next(err)
-	checkFiles: (next) ->
-		return next false  unless (@config.checkScripts||[]).length
-
+	checkFiles: (next,config) ->
 		# Prepare
-		console.log 'Checking files'
+		config or= @config
+		return next false  unless config.checkScripts or config.checkStyles
+		console.log 'Check files'
 
-		# Cycle
-		@forFilesIn(
-			# Files
-			@config.checkScripts
-
+		# Handle
+		@forFilesInDirectory(
 			# Directory
-			@config.srcPath
+			config.srcPath
 			
 			# Callback
 			(fileFullPath,fileRelativePath,next) =>
 				# Render
-				@checkScriptFile(
-					# File path
-					fileFullPath
-
-					# Next
-					(err) =>
-						next err
-				)
+				@checkFile fileFullPath, next
 			
 			# Next
 			(err) =>
@@ -194,51 +221,311 @@ class Buildr
 
 		# Completed
 		true
+	
+
+	# ---------------------------------
+	# Copy srcPath to outPath
 
 	# Copy srcPath to outPath
 	# next(err)
-	cpSrcToOut: (next) ->
+	cpSrcToOut: (next,config) ->
 		# Prepare
-		return next false  if @config.outPath is @config.srcPath
-		console.log 'Copying srcPath to outPath'
+		config or= @config
+		return next false  if config.outPath is config.srcPath
+		console.log "Copying #{config.srcPath} to #{config.outPath}"
 
 		# Remove outPath
-		util.rmdir @config.outPath, (err) =>
+		util.rmdir config.outPath, (err) =>
 			return next err	 if err
 
 			# Copy srcPath to outPath
-			util.cpdir @config.srcPath, @config.outPath, (err) ->
+			util.cpdir config.srcPath, config.outPath, (err) ->
 				# Next
-				console.log 'Copied srcPath to outPath'
+				console.log "Copied #{config.srcPath} to #{config.outPath}"
 				next err
 	
 		# Completed
 		true
 	
+
+	# ---------------------------------
+	# Generate Files
+
 	# Generate files
 	# next(err)
 	generateFiles: (next) ->
 		# Prepare
 		tasks = new util.Group (err) ->
+			console.log 'Generated files'
 			next err
 		tasks.total += 3
-		console.log 'Generating Files'
+		console.log 'Generating files'
 
 		# Generate src loader file
-		@generateSrcLoaderFile (err) ->
-			tasks.complete err
+		@generateSrcLoaderFile tasks.completer()
 
 		# Generate bundled script file
-		@generateBundledScriptFile (err) ->
-			tasks.complete err
+		@generateBundledScriptFile tasks.completer()
 
 		# Generate bundle style file
-		@generateBundledStyleFile (err) ->
-			tasks.complete err
+		@generateBundledStyleFile tasks.completer()
 
 		# Completed
 		true
 	
+	# Generate src loader file
+	# next(err)
+	generateSrcLoaderFile: (next,config) ->
+		# Check
+		config or= @config
+		return next false  unless config.srcLoaderPath
+
+		# Log
+		console.log "Generating #{config.srcLoaderPath}"
+
+		# Prepare
+		templates = {}
+		srcLoaderData = ''
+		srcLoaderPath = config.srcLoaderPath
+		loadedInTemplates = null
+
+		# Loaded in Templates
+		templateTasks = new util.Group (err) =>
+			# Check
+			next err if err
+
+			# Stringify scripts
+			srcLoaderData += "scripts = [\n"
+			for script in config.scriptsOrder
+				srcLoaderData += "\t'#{script}'\n"
+			srcLoaderData += "\]\n\n"
+
+			# Stringify styles
+			srcLoaderData += "styles = [\n"
+			for style in config.scriptsOrder
+				srcLoaderData += "\t'#{style}'\n"
+			srcLoaderData += "\]\n\n"
+
+			# Append Templates
+			srcLoaderData += templates.srcLoader+"\n\n"+templates.srcLoaderHeader
+
+			# Write in coffee first for debugging
+			fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+				# Check
+				return next err  if err
+
+				# Compile Script
+				srcLoaderData = coffee.compile(srcLoaderData)
+
+				# Now write in javascript
+				fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+					# Check
+					return next err  if err
+
+					# Log
+					console.log "Generated #{config.srcLoaderPath}"
+					
+					# Good
+					next false
+
+		# Total Template Tasks
+		templateTasks.total = if config.srcLoaderHeader then 1 else 2
+
+		# Load srcLoader Template
+		fs.readFile __dirname+'/templates/srcLoader.coffee', (err,data) ->
+			return templateTasks.exit err if err
+			templates.srcLoader = data.toString()
+			templateTasks.complete err
+
+		# Load srcLoaderHeader Template
+		if config.srcLoaderHeader
+			templates.srcLoaderHeader = config.srcLoaderHeader
+		else
+			fs.readFile __dirname+'/templates/srcLoaderHeader.coffee', (err,data) ->
+				return templateTasks.exit err  if err
+				templates.srcLoaderHeader = data.toString()
+				templateTasks.complete err
+
+		# Completed
+		true
+
+	# Generate out style file
+	# next(err)
+	generateBundledStyleFile: (next,config) ->
+		# Check
+		config or= @config
+		return next false  unless config.bundleStylePath
+
+		# Log
+		console.log "Generating #{config.bundleStylePath}"
+		
+		# Prepare
+		source = ''
+		cleanFiles = []
+
+		# Cycle
+		@useOrScan(
+			# Files
+			config.stylesOrder
+
+			# Directory
+			@config.outPath
+			
+			# Callback
+			(fileFullPath,fileRelativePath,next) =>
+				# Ensure .less file exists
+				extension = path.extname(fileRelativePath)
+				switch extension
+					# CSS
+					when '.css'
+						# Determine less path
+						_fileRelativePath = fileRelativePath
+						_fileFullPath = fileFullPath
+						fileRelativePath = _fileRelativePath.substring(0,_fileRelativePath.length-extension.length)+'.less'
+						fileFullPath = _fileFullPath.substring(0,_fileFullPath.length-extension.length)+'.less'
+
+						# Amend clean files
+						if config.deleteBundledFiles
+							@filesToClean.push _fileFullPath
+						@filesToClean.push fileFullPath
+
+						# Check if less path exists
+						path.exists fileFullPath, (exists) ->
+							# It does
+							if exists
+								# Append source
+								source += """@import "#{fileRelativePath}";\n"""
+								next false
+							# It doesn't
+							else
+								# Create it
+								util.cp _fileFullPath, fileFullPath, (err) ->
+									return next err	 if err
+									# Append source
+									source += """@import "#{fileRelativePath}";\n"""
+									next false
+					
+					# Less
+					when '.less'
+						# Amend clean files
+						if config.deleteBundledFiles
+							@filesToClean.push fileFullPath
+
+						# Append source
+						source += """@import "#{fileRelativePath}";\n"""
+						next false
+					
+					# Something else
+					else
+						next false
+
+			# Next
+			(err) =>
+				return next err 	if err
+
+				# Compile file
+				@compileStyleData(
+					# File Path
+					config.bundleStylePath
+
+					# Source
+					source
+
+					# Next
+					(err,result) =>
+						return next err	 if err
+						
+						# Write
+						fs.writeFile config.bundleStylePath, result, (err) ->
+							# Log
+							console.log "Generated #{config.bundleStylePath}"
+							
+							# Forward
+							next err, result
+				)
+		)
+
+		# Completed
+		true
+
+	# Generate out script file
+	# next(err)
+	generateBundledScriptFile: (next,config) ->
+		# Check
+		config or= @config
+		return next false  unless config.bundleScriptPath
+
+		# Log
+		console.log "Generating #{config.bundleScriptPath}"
+		
+		# Prepare
+		results = {}
+
+		# Cycle
+		@useOrScan(
+			# Files
+			config.scriptsOrder
+
+			# Directory
+			config.outPath
+			
+			# Callback
+			(fileFullPath,fileRelativePath,next) =>
+				# Ensure valid extension
+				extension = path.extname(fileRelativePath)
+				switch extension
+					# Script
+					when '.js','.coffee'
+						# Render
+						@compileScriptFile(
+							# File path
+							fileFullPath
+
+							# Next
+							(err,result) =>
+								return next err	 if err
+								results[fileRelativePath] = result
+								if config.deleteBundledFiles
+									@filesToClean.push fileFullPath
+								next err
+							
+							# Write file
+							false
+						)
+					
+					# Else
+					else
+						next false
+				
+			# Next
+			(err) =>
+				return next err	 if err
+
+				# Prepare
+				result = ''
+
+				# Cycle Array
+				if config.scriptsOrder.has?
+					for fileRelativePath in config.scriptsOrder
+						return next new Error("The file #{fileRelativePath} failed to compile")  unless results[fileRelativePath]?
+						result += results[fileRelativePath]
+
+				# Write file
+				fs.writeFile config.bundleScriptPath, result, (err) ->
+					# Log
+					console.log "Generated #{config.bundleScriptPath}"
+					
+					# Forward
+					next err
+		)
+
+		# Completed
+		true
+
+
+	# ---------------------------------
+	# Clean outPath
+
 	# Clean outPath
 	# next(err)
 	cleanOutPath: (next) ->
@@ -259,31 +546,33 @@ class Buildr
 		# Completed
 		true
 	
-	# Compress outPath
+
+	# ---------------------------------
+	# Compress Files
+
+	# Compress files
 	# next(err)
-	compressOutPath: (next) ->
+	compressFiles: (next,config) ->
 		# Prepare
-		return next false  unless @config.compressOutFiles
-		console.log 'Compressing outPath'
+		config or= @config
+		return next false  unless config.compressScripts or config.compressStyles or config.compressImages
+		console.log 'Compress files'
 
-		# Scan for files
-		util.scandir(
-			# Path
-			@config.outPath
-
-			# File Action
-			# next(err)
-			(fileFullPath,fileRelativePath,next) =>
-				@compressFile fileFullPath, (err) ->
-					next err
+		# Handle
+		@forFilesInDirectory(
+			# Directory
+			config.outPath
 			
-			# Dir Action
-			false
-
+			# Callback
+			(fileFullPath,fileRelativePath,next) =>
+				# Render
+				@compressFile fileFullPath, next
+			
 			# Next
-			(err) -> 
-				console.log 'Compressed outPath'
-				return next err
+			(err) =>
+				return next err	 if err
+				console.log 'Compressed files'
+				next err
 		)
 
 		# Completed
@@ -293,10 +582,10 @@ class Buildr
 	# =====================================
 	# Helpers
 
-	# For each file in
+	# For each file in an array
 	# callback(fileFullPath,fileRelativePath,next)
 	# next(err)
-	forFilesIn: (files,parentPath,callback,next) ->
+	forFilesInArray: (files,parentPath,callback,next) ->
 		# Check
 		return next false  unless (files||[]).length
 
@@ -311,233 +600,70 @@ class Buildr
 			((fileRelativePath)=>
 				util.expandPath fileRelativePath, parentPath, {}, (err,fileFullPath) =>
 					return tasks.exit err if err
-
-					# Callback
 					callback fileFullPath, fileRelativePath, tasks.completer()
 			)(fileRelativePath)
 		
 		# Completed
 		true
-
-
-	# =====================================
-	# Loaders
-
-	# Generate src loader file
+	
+	# For each file in a directory
+	# callback(fileFullPath,fileRelativePath,next)
 	# next(err)
-	generateSrcLoaderFile: (next) ->
-		# Check
-		return next false  unless @config.srcLoaderPath
+	forFilesInDirectory: (parentPath,callback,next) ->
+		# Scan for files
+		util.scandir(
+			# Path
+			parentPath
 
-		# Prepare
-		templates = {}
-		srcLoaderData = ''
-		srcLoaderPath = @config.srcLoaderPath
-		loadedInTemplates = null
+			# File Action
+			# next(err)
+			callback
+			
+			# Dir Action
+			false
 
-		# Loaded in Templates
-		templateTasks = new util.Group (err) =>
-			# Check
-			next err if err
+			# Next
+			next
+		)
 
-			# Stringify scripts
-			srcLoaderData += "scripts = [\n"
-			for script in @config.bundleScripts
-				srcLoaderData += "\t'#{script}'\n"
-			srcLoaderData += "\]\n\n"
+		# Completed
+		true
+	
+	# Use or scan
+	# callback(fileFullPath,fileRelativePath,next)
+	# next(err)
+	useOrScan: (files,parentPath,callback,next) ->
+		# Handle
+		if files is true
+			@forFilesInDir(
+				# Files
+				files
 
-			# Stringify styles
-			srcLoaderData += "styles = [\n"
-			for style in @config.bundleStyles
-				srcLoaderData += "\t'#{style}'\n"
-			srcLoaderData += "\]\n\n"
+				# Directory
+				parentPath
 
-			# Append Templates
-			srcLoaderData += templates.srcLoader+"\n\n"+templates.srcLoaderHeader
+				# Callback
+				callback
 
-			# Write in coffee first for debugging
-			fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
-				# Check
-				next err if err
+				# Next
+				next
+			)
+		else if files and files.length
+			@forFilesInArray(
+				# Files
+				files
 
-				# Compile Script
-				srcLoaderData = coffee.compile(srcLoaderData)
+				# Directory
+				parentPath
 
-				# Now write in javascript
-				fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
-					# Check
-					next err if err
+				# Callback
+				callback
 
-					# Good
-					next false
-
-		# Total Template Tasks
-		templateTasks.total = if @config.srcLoaderHeader then 1 else 2
-
-		# Load srcLoader Template
-		fs.readFile __dirname+'/templates/srcLoader.coffee', (err,data) ->
-			return templateTasks.exit err if err
-			templates.srcLoader = data.toString()
-			templateTasks.complete err
-
-		# Load srcLoaderHeader Template
-		if @config.srcLoaderHeader
-			templates.srcLoaderHeader = @config.srcLoaderHeader
+				# Next
+				next
+			)
 		else
-			fs.readFile __dirname+'/templates/srcLoaderHeader.coffee', (err,data) ->
-				return templateTasks.exit err if err
-				templates.srcLoaderHeader = data.toString()
-				templateTasks.complete err
-
-		# Completed
-		true
-
-
-	# =====================================
-	# Bundlers
-
-	# ---------------------------------
-	# Styles
-
-	# Generate out style file
-	# next(err)
-	generateBundledStyleFile: (next) ->
-		# Check
-		return next false  unless @config.bundleStylePath
-
-		# Prepare
-		source = ''
-		cleanFiles = []
-
-		# Cycle
-		@forFilesIn(
-			# Files
-			@config.bundleStyles
-
-			# Directory
-			@config.outPath
-			
-			# Callback
-			(fileFullPath,fileRelativePath,next) =>
-				# Ensure .less file exists
-				extension = path.extname(fileRelativePath)
-				if extension isnt '.less'
-					# Determine less path
-					_fileRelativePath = fileRelativePath
-					_fileFullPath = fileFullPath
-					fileRelativePath = _fileRelativePath.substring(0,_fileRelativePath.length-extension.length)+'.less'
-					fileFullPath = _fileFullPath.substring(0,_fileFullPath.length-extension.length)+'.less'
-
-					# Amend clean files
-					if @config.deleteBundledOutFiles
-						@filesToClean.push _fileFullPath
-					@filesToClean.push fileFullPath
-
-					# Check if less path exists
-					path.exists fileFullPath, (exists) ->
-						# It does
-						if exists
-							# Append source
-							source += """@import "#{fileRelativePath}";\n"""
-							next false
-						# It doesn't
-						else
-							util.cp _fileFullPath, fileFullPath, (err) ->
-								return next err	 if err
-								# Append source
-								source += """@import "#{fileRelativePath}";\n"""
-								next false
-				else
-					# Amend clean files
-					if @config.deleteBundledOutFiles
-						@filesToClean.push fileFullPath
-
-					# Append source
-					source += """@import "#{fileRelativePath}";\n"""
-					next false
-
-			# Next
-			(err) =>
-				return next err 	if err
-
-				# Compile file
-				compileScriptData(
-					# File Path
-					@config.bundleStylePath
-
-					# Source
-					source
-
-					# Next
-					(err,result) =>
-						return next err	 if err
-						
-						# Write
-						fs.writeFile @config.bundleStylePath, result, (err) ->
-							# Forward
-							next err, result
-				)
-		)
-
-		# Completed
-		true
-
-	# ---------------------------------
-	# Scripts
-
-	# Generate out script file
-	# next(err)
-	generateBundledScriptFile: (next) ->
-		# Check
-		return next false  unless @config.bundleScriptPath
-
-		# Prepare
-		results = {}
-
-		# Cycle
-		@forFilesIn(
-			# Files
-			@config.bundleScripts
-
-			# Directory
-			@config.outPath
-			
-			# Callback
-			(fileFullPath,fileRelativePath,next) =>
-				# Render
-				@compileScriptFile(
-					# File path
-					fileFullPath
-
-					# Next
-					(err,result) =>
-						return next err	 if err
-						results[file] = result
-						if @config.deleteBundledOutFiles
-							@filesToClean.push fileFullPath
-						next err
-					
-					# Write file
-					false
-				)
-			
-			# Next
-			(err) =>
-				return next err	 if err
-
-				# Prepare
-				result = ''
-
-				# Cycle
-				for file in @config.bundleScripts
-					unless results[file]?
-						return next new Error('A file failed to compile')
-					result += results[file]
-
-				# Write file
-				fs.writeFile @config.bundleScriptPath, result, (err) ->
-					next err
-		)
+			next false
 
 		# Completed
 		true
@@ -558,30 +684,70 @@ class Buildr
 				@compileScriptFile fileFullPath, next
 			when '.less'
 				@compileStyleFile fileFullPath, next
-			when '.gif','.jpg','.jpeg','.png','.tiff','.bmp'
-				@compressImageFile fileFullPath, next
 			else
-				false
+				next false
 		
 		# Completed
 		true
 	
 	# Compress the file
 	# next(err)
-	compressFile: (fileFullPath,next) ->
+	compressFile: (fileFullPath,next,config) ->
 		# Prepare
+		config or= @config
+		extension = path.extname fileFullPath
+
+		# Handle
+		switch extension
+			# Scripts
+			when '.js'
+				if config.compressScripts is true or config.compressScripts.has? and config.compressScripts.has(fileFullPath)
+					@compressScriptFile fileFullPath, next
+				else
+					next false
+			
+			# Styles
+			when '.css'
+				if config.compressStyles is true or config.compressStyles.has? and config.compressStyles.has(fileFullPath)
+					@compressStyleFile fileFullPath, next
+				else
+					next false
+			
+			# Images
+			when '.gif','.jpg','.jpeg','.png','.tiff','.bmp'
+				if config.compressImages is true or config.compressImages.has? and config.compressImages.has(fileFullPath)
+					@compressImageFile fileFullPath, next
+				else
+					next false
+			
+			# Other
+			else
+				next false
+		
+		# Completed
+		true
+	
+	# Check the file
+	# next(err)
+	checkFile: (fileFullPath,next,config) ->
+		# Prepare
+		config or= @config
 		extension = path.extname fileFullPath
 
 		# Handle
 		switch extension
 			when '.js'
-				@compressScriptFile fileFullPath, next
+				if config.checkScripts is true or config.checkScripts.has? and config.checkScripts.has(fileFullPath)
+					@checkScriptFile fileFullPath, next
+				else
+					next false
 			when '.css'
-				@compressStyleFile fileFullPath, next
-			when '.gif','.jpg','.jpeg','.png','.tiff','.bmp'
-				@compressImageFile fileFullPath, next
+				if config.checkStyles is true or config.checkStyles.has? and config.checkStyles.has(fileFullPath)
+					@checkStyleFile fileFullPath, next
+				else
+					next false
 			else
-				false
+				next false
 		
 		# Completed
 		true
@@ -596,11 +762,27 @@ class Buildr
 	# Compress Image File
 	# next(err)
 	compressImageFile: (fileFullPath,next) ->
-		try
-			pulverizr.compress fileFullPath, quiet: true
-		catch err
-			next err
+		# Log
+		console.log "Compressing #{fileFullPath}"
 
+		# Attempt
+		try
+			# Compress
+			pulverizr.compress fileFullPath, quiet: true
+			
+			# Log
+			console.log "Compressed #{fileFullPath}"
+
+			# Forward
+			next false
+		
+		# Error
+		catch err
+			# Forward
+			next err
+		
+		# Complete
+		true
 
 	# =====================================
 	# Style Files
@@ -639,6 +821,9 @@ class Buildr
 	# Compile Style File
 	# next(err,result)
 	compileStyleFile: (fileFullPath,next,write=true) ->
+		# Log
+		# console.log "Compiling #{fileFullPath}"
+
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
@@ -651,12 +836,130 @@ class Buildr
 				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
+					# Log
+					# console.log "Compiled #{fileFullPath}"
+				
 					# Forward
 					next err, result
 	
 		# Completed
 		true
 	
+	# ---------------------------------
+	# Compress
+
+	# Compress Style File
+	# next(err,result)
+	compressStyleData: (fileFullPath,src,next) ->
+		# Prepare
+		result = ''
+		options =
+			paths: [path.dirname(fileFullPath)]
+			optimization: 1
+			filename: fileFullPath
+
+		# Compress
+		new (less.Parser)(options).parse src, (err, tree) ->
+			if err
+				console.log err
+				next new Error('Less compilation failed'), result
+			else
+				try
+					# Compress
+					result = tree.toCSS compress: 1
+
+					# Write
+					next false, result
+				catch err
+					next err, result
+
+		# Completed
+		true
+	
+	# Compress Style File
+	# next(err,result)
+	compressStyleFile: (fileFullPath,next,write=true) ->
+		# Log
+		console.log "Compressing #{fileFullPath}"
+
+		# Read
+		fs.readFile fileFullPath, (err,data) =>
+			return next err	 if err
+
+			# Compress
+			@compressStyleData fileFullPath, data.toString(), (err,result) ->
+				return next err, result  if err or !write
+
+				# Write
+				fs.writeFile fileFullPath, result, (err) ->
+					return next err	 if err
+
+					# Log
+					console.log "Compressed #{fileFullPath}"
+				
+					# Forward
+					next err, result
+	
+		# Completed
+		true
+	
+	# ---------------------------------
+	# Check
+
+	# Check Style Data
+	# next(err,errord)
+	checkStyleData: (fileFullPath,src,next,config) ->
+		# Prepare
+		config or= @config
+		errord = false
+
+		# Peform checks
+		result = csslint.verify src, config.csslintOptions||{}
+		formatId = 'text'
+
+		# Check for errors
+		unless result.messages.length
+			return next false, false
+		
+		# Log the errors
+		for message in result.messages
+			continue	unless message and message.type is 'error'
+
+			# Errord
+			errord = true
+
+		# Output
+		if errord
+			console.log csslint.getFormatter(formatId).formatResults(result, fileFullPath, formatId)
+
+		# Forward
+		next false, errord
+	
+
+	# Check Style File
+	# next(err,errord)
+	checkStyleFile: (fileFullPath,next) ->
+		# Log
+		console.log "Checking #{fileFullPath}"
+
+		# Read
+		fs.readFile fileFullPath, (err,data) =>
+			# Error
+			return next err, false  if err
+
+			# Check
+			@checkStyleData fileFullPath, data.toString(), (err,errord) ->
+				return next err	 if err
+				
+				# Log
+				console.log "Checked #{fileFullPath}"
+
+				# Forward
+				return next err, errord
+
+		# Completed
+		true
+
 
 	# =====================================
 	# Script Files
@@ -668,7 +971,7 @@ class Buildr
 	# next(err,result)
 	compileScriptData: (extension,src,next) ->
 		# Prepare
-		result = ''
+		result = false
 
 		# Compile
 		try
@@ -678,7 +981,7 @@ class Buildr
 				when '.js'
 					result = src
 				else
-					throw new Error('Unknown script type')
+					throw new Error('Unknown script type: '+extension)
 		catch err
 			next err
 		
@@ -688,6 +991,9 @@ class Buildr
 	# Compile Script File
 	# next(err,result)
 	compileScriptFile: (fileFullPath,next,write=true) ->
+		# Log
+		# console.log "Compiling #{fileFullPath}"
+
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
@@ -699,6 +1005,9 @@ class Buildr
 				# Write
 				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
+
+					# Log
+					# console.log "Compiled #{fileFullPath}"
 
 					# Forward
 					next err, result
@@ -724,6 +1033,9 @@ class Buildr
 	# Compress Script File
 	# next(err,result)
 	compressScriptFile: (fileFullPath,next,write=true) ->
+		# Log
+		console.log "Compressing #{fileFullPath}"
+
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
@@ -736,6 +1048,9 @@ class Buildr
 				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
+					# Log
+					console.log "Compressed #{fileFullPath}"
+				
 					# Forward
 					next err, result
 
@@ -747,12 +1062,13 @@ class Buildr
 
 	# Check Script Data
 	# next(err,errord)
-	checkScriptData: (src,next) ->
+	checkScriptData: (fileFullPath,src,next,config) ->
 		# Prepare
+		config or= @config
 		errord = false
 
 		# Peform checks
-		jshint src, @config.jshintOptions||{}
+		jshint src, config.jshintOptions||{}
 		result = jshint.data()
 		result.errors or= []
 
@@ -760,6 +1076,9 @@ class Buildr
 		unless result.errors.length
 			return next false, false
 		
+		# Log the file
+		console.log "\n#{fileFullPath}:"
+
 		# Log the errors
 		for error in result.errors
 			continue	unless error and error.raw
@@ -772,10 +1091,10 @@ class Buildr
 				error[b] or a
 			evidence =
 				if error.evidence
-					"\n\t\t" + error.evidence.replace(/^\s+/, '')
+					"\n\t" + error.evidence.replace(/^\s+/, '')
 				else
 					''
-			console.log "\tLine #{error.line}: #{message} #{evidence}"
+			console.log "\tLine #{error.line}: #{message} #{evidence}\n"
 		
 		# Forward
 		next false, errord
@@ -785,7 +1104,7 @@ class Buildr
 	# next(err,errord)
 	checkScriptFile: (fileFullPath,next) ->
 		# Log
-		console.log 'Checking', fileFullPath
+		console.log "Checking #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -793,7 +1112,12 @@ class Buildr
 			return next err, false  if err
 
 			# Check
-			@checkScriptData data.toString(), (err,errord) ->
+			@checkScriptData fileFullPath, data.toString(), (err,errord) ->
+				return next err	 if err
+
+				# Log
+				console.log "Checked #{fileFullPath}"
+
 				# Forward
 				return next err, errord
 

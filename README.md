@@ -33,59 +33,150 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 
 ## Configure
 
-Before you use Buildr, you must specify some configuration for it. Here is an example:
+Before you use Buildr, you must specify some configuration for it. The available configuration is:
 
 ``` coffeescript
- {
- 	srcPath: 'src'
- 	outPath: 'out'
-	compress: true
-	srcLoaderPath: 'src/loader.js'
-	outStylePath: 'out/styles.css'
-	outScriptPath: 'out/scripts.js'
-	compressOutFiles
- 	bundleScripts: [
- 		'scripts/file1.js'
- 		'scripts/file2.coffee'
- 	]
- 	bundleStyles: [
- 		'styles/file1.css'
- 		'styles/file2.less'
- 	]
- 	checkScripts: [
- 		'scripts/file1.js'
- 		'scripts/file2.coffee'
- 	]
-	jshintOptions: {
-		browser: true
-		laxbreak: true
-		boss: true
-		undef: true
-		onevar: true
-		strict: true
-		noarg: true
-	}
- }
+{
+	# Paths
+	srcPath: false # String
+	outPath: false # String or false
+
+	# Loaders
+	srcLoaderHeader: false # String or false
+	srcLoaderPath: false # String or false
+
+	# Bundling
+	bundleScripts: false # Array or false
+	bundleStyles: false # Array or false
+	bundleScriptPath: false # String or false
+	bundleStylePath: false # String or false
+	deleteBundledFiles: true # true or false
+
+	# Checking
+	checkScripts: true # Array or true or false
+	checkStyles: true # Array or true or false
+	jshintOptions: false # Object or false
+	csslintOptions: false # Object or false
+	
+	# Compression
+	compressScripts: true # Array or true or false
+	compressStyles: true # Array or true or false
+}
 ```
 
-Which works great for the following app structure:
+The above values are the default values for those options. The settings which are set to `true` will autodect the files for you.
 
-> - app
-	- src
-		- scripts
-			- file1.js
-			- file2.coffee
-		- styles
-			- file1.css
-			- file2.less
 
-Using that configuration with buildr will:
+### Checking
 
-1. Copy `app/src` to `app/out`
-1. Generate `src/loader.js` which loads in the original styles and scripts into your page; use this file for development
-1. Generates `out/styles.css` and `out/scripts.js` which are all your styles and scripts compressed and bundled together respectively; use these files for production
+To pass your scripts through jshint, and your styles through csslint, you'd want the following configuration:
 
-If you'd prefer to have the `srcPath` and the `outPath` the same, you can do that too.
+``` coffeescript
+{
+	# Paths
+	srcPath: 'src' # String
+
+	# Checking
+	checkScripts: true # Array or true or false
+	checkStyles: true # Array or true or false
+	jshintOptions: false # Object or false
+	csslintOptions: false # Object or false
+}
+```
+
+
+### Compression
+
+To copy your `src` directory to an `out` directory, then compile and compress all your styles and scripts in the `out` directory, you'd want the following configuration:
+
+``` coffeescript
+{
+	# Paths
+	srcPath: 'src' # String
+	outPath: 'out' # String or false
+
+	# Compression
+	compressScripts: true # Array or true or false
+	compressStyles: true # Array or true or false
+}
+```
+
+
+### Bundling
+
+To bundle all your style files into one file called `out/bundled.css` and all your script files into one file called `out/bundled.js`, you'd want the following configuration:
+
+``` coffeescript
+{
+	# Paths
+	srcPath: 'src' # String
+	outPath: 'out' # String or false
+
+	# Bundling
+	bundleScripts: [
+		'script1.js'
+		'script2.coffee'
+	] # Array or false
+	bundleStyles: [
+		'style1.css'
+		'style2.less'
+	] # Array or false
+	bundleScriptPath: 'out/bundled.js' # String or false
+	bundleStylePath: 'out/bundled.css' # String or false
+	deleteBundledFiles: true # true or false
+}
+```
+
+
+### Loaders
+
+To generate a source loader file called `src/loader.js` which will load in all your source styles and scripts into the page, you can use the following:
+
+``` coffeescript
+{
+	# Paths
+	srcPath: 'src' # String
+
+	# Loaders
+	srcLoaderHeader: '''
+		# Prepare
+		myprojectEl = document.getElementById('myproject-include')
+		myprojectBaseUrl = myprojectEl.src.replace(/\\?.*$/,'').replace(/loader\\.js$/, '').replace(/\\/+$/, '')+'/'
+
+		# Load in with Buildr
+		myprojectBuildr = new window.Buildr {
+			baseUrl: myprojectBaseUrl
+			beforeEl: myprojectEl
+			serverCompilation: window.serverCompilation or false
+			scripts: scripts
+			styles: styles
+		}
+		myprojectBuildr.load()
+		''' # note, all \ in this are escaped due to it being in a string
+	srcLoaderPath: 'src/myproject.loader.js' # String or false
+
+	# Bundling
+	bundleScripts: [
+		'script1.js'
+		'script2.coffee'
+	] # Array or false
+	bundleStyles: [
+		'style1.css'
+		'style2.less'
+	] # Array or false
+}
+```
+
+Then include into your page with the following html:
+
+``` html
+<script id="myproject-include" src="../../loader.js"></script>
+```
+
+
+### Combining
+
+You can feel free to combine any of the configurations above to get something which checks, compiles, compresses, bundles, and generates loaders too. Though compression and bundling is dependent on having an `outPath` which is different from your `srcPath`.
 
 
 ## Run
@@ -133,7 +224,7 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 - v0.6 July 21, 2011
 	- Added javascript compression
-	- Added jshint checks
+	- Added jshint and csslint checks
 	- Added image compression
 	- Added css compression
 

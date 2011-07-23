@@ -1,10 +1,14 @@
 {
 	"name": "buildr",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)",
 	"homepage": "https://github.com/balupton/buildr.npm",
 	"keywords": [
 		"javascript",
+		"coffee",
+		"lesscss",
+		"less",
+		"css",
 		"builder",
 		"package",
 		"compile",
