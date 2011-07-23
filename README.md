@@ -201,7 +201,9 @@ Within your application folder
 
 2. Stick your configuration in `buildr.cson`
 
-3. Within your app root, run `buildr`
+3. Run the global buildr
+
+		`buildr`
 
 
 ### As a Module
