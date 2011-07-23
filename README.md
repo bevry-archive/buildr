@@ -179,6 +179,8 @@ Then include into your page with the following html:
 <script id="myproject-include" src="../../loader.js"></script>
 ```
 
+This is incredibly useful for developing apps which have lots of files, as instead of updating all your demo page's html with the new script and style files all the time, you just include the loader.
+
 
 ### Combining
 
