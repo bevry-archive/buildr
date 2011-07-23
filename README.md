@@ -61,7 +61,7 @@ Before you use Buildr, you must specify some configuration for it. The available
 	bundleStylePath: false # String or false
 	deleteBundledFiles: true # true or false
 
-	# Loaders (requires outPath and Order)
+	# Loaders (requires Order)
 	srcLoaderHeader: false # String or false
 	srcLoaderPath: false # String or false
 }
@@ -153,7 +153,7 @@ To generate a source loader file called `src/loader.js` which will load in all y
 		'style2.less'
 	] # Array or false
 
-	# Loaders (requires outPath and Order)
+	# Loaders (requires Order)
 	srcLoaderHeader: '''
 		# Prepare
 		myprojectEl = document.getElementById('myproject-include')

@@ -57,7 +57,7 @@ class Buildr
 		bundleStylePath: false # String or false
 		deleteBundledFiles: true # true or false
 
-		# Loaders (requires outPath and Order)
+		# Loaders (requires Order)
 		srcLoaderHeader: false # String or false
 		srcLoaderPath: false # String or false
 	}
