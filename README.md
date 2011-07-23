@@ -193,22 +193,26 @@ You can feel free to combine any of the configurations above to get something wh
 
 _Note: this option is currently disabled due to [this bug](https://github.com/balupton/buildr.npm/issues/8)_
 
+Within your application folder
+
 1. Install Buildr Globally
 
 		npm -g install buildr
 
-2. Stick your configuration in `app/buildr.cson`
+2. Stick your configuration in `buildr.cson`
 
 3. Within your app root, run `buildr`
 
 
 ### As a Module
 
+Within your application folder
+
 1. Install Buildr Locally
 
 		npm install buildr
 
-2. Code
+2. Code `buildr.coffee`
 
 	``` coffeescript
 	buildr = require 'buildr'
@@ -218,6 +222,10 @@ _Note: this option is currently disabled due to [this bug](https://github.com/ba
 		throw err if err
 		console.log 'Building completed'
 	```
+
+3. Run your buildr
+
+		`coffee buildr.coffee`
 
 
 ## License
