@@ -203,7 +203,7 @@ Within your application folder:
 
 3. Run the global buildr
 
-		`buildr`
+		buildr
 
 
 ### As a Module
@@ -227,7 +227,7 @@ Within your application folder:
 
 3. Run your buildr
 
-		`coffee buildr.coffee`
+		coffee buildr.coffee
 
 
 ## License
