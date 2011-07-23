@@ -49,17 +49,17 @@ class Buildr
 		compressImages: true # Array or true or false
 
 		# Order
-		scriptsOrder: false # Array or true or false
-		stylesOrder: false # Array or true or false
-
-		# Loaders (requires outPath and Order)
-		srcLoaderHeader: false # String or false
-		srcLoaderPath: false # String or false
+		scriptsOrder: false # Array or false
+		stylesOrder: false # Array or false
 
 		# Bundling (requires outPath and Order)
 		bundleScriptPath: false # String or false
 		bundleStylePath: false # String or false
 		deleteBundledFiles: true # true or false
+
+		# Loaders (requires outPath and Order)
+		srcLoaderHeader: false # String or false
+		srcLoaderPath: false # String or false
 	}
 
 	# Files to clean

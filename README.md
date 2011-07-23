@@ -53,17 +53,17 @@ Before you use Buildr, you must specify some configuration for it. The available
 	compressImages: true # Array or true or false
 
 	# Order
-	scriptsOrder: false # Array or true or false
-	stylesOrder: false # Array or true or false
-
-	# Loaders (requires outPath and Order)
-	srcLoaderHeader: false # String or false
-	srcLoaderPath: false # String or false
+	scriptsOrder: false # Array or false
+	stylesOrder: false # Array or false
 
 	# Bundling (requires outPath and Order)
 	bundleScriptPath: false # String or false
 	bundleStylePath: false # String or false
 	deleteBundledFiles: true # true or false
+
+	# Loaders (requires outPath and Order)
+	srcLoaderHeader: false # String or false
+	srcLoaderPath: false # String or false
 }
 ```
 
@@ -252,6 +252,6 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ### Todo
 
-- Needs auto file finding for bundling
+- Needs auto file finding for bundling/orders
 - Needs no-config version
 - Needs unit tests
