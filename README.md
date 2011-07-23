@@ -193,7 +193,7 @@ You can feel free to combine any of the configurations above to get something wh
 
 _Note: this option is currently disabled due to [this bug](https://github.com/balupton/buildr.npm/issues/8)_
 
-Within your application folder
+Within your application folder:
 
 1. Install Buildr Globally
 
@@ -208,7 +208,7 @@ Within your application folder
 
 ### As a Module
 
-Within your application folder
+Within your application folder:
 
 1. Install Buildr Locally
 
