@@ -229,10 +229,8 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ### Changelog
 
 - v0.6 July 21, 2011
-	- Added javascript compression
+	- Added javascript, image and css compression
 	- Added jshint and csslint checks
-	- Added image compression
-	- Added css compression
 
 - v0.5 July 9, 2011
 	- Added srcLoader compilation
