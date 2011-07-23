@@ -41,26 +41,29 @@ Before you use Buildr, you must specify some configuration for it. The available
 	srcPath: false # String
 	outPath: false # String or false
 
-	# Loaders
-	srcLoaderHeader: false # String or false
-	srcLoaderPath: false # String or false
-
-	# Bundling
-	bundleScripts: false # Array or false
-	bundleStyles: false # Array or false
-	bundleScriptPath: false # String or false
-	bundleStylePath: false # String or false
-	deleteBundledFiles: true # true or false
-
 	# Checking
 	checkScripts: true # Array or true or false
 	checkStyles: true # Array or true or false
 	jshintOptions: false # Object or false
 	csslintOptions: false # Object or false
 	
-	# Compression
+	# Compression (requires outPath)
 	compressScripts: true # Array or true or false
 	compressStyles: true # Array or true or false
+	compressImages: true # Array or true or false
+
+	# Order
+	scriptsOrder: false # Array or true or false
+	stylesOrder: false # Array or true or false
+
+	# Loaders (requires outPath and Order)
+	srcLoaderHeader: false # String or false
+	srcLoaderPath: false # String or false
+
+	# Bundling (requires outPath and Order)
+	bundleScriptPath: false # String or false
+	bundleStylePath: false # String or false
+	deleteBundledFiles: true # true or false
 }
 ```
 
@@ -95,9 +98,10 @@ To copy your `src` directory to an `out` directory, then compile and compress al
 	srcPath: 'src' # String
 	outPath: 'out' # String or false
 
-	# Compression
+	# Compression (requires outPath)
 	compressScripts: true # Array or true or false
 	compressStyles: true # Array or true or false
+	compressImages: true # Array or true or false
 }
 ```
 
@@ -112,17 +116,19 @@ To bundle all your style files into one file called `out/bundled.css` and all yo
 	srcPath: 'src' # String
 	outPath: 'out' # String or false
 
-	# Bundling
-	bundleScripts: [
+	# Order
+	scriptsOrder: [
 		'script1.js'
 		'script2.coffee'
 	] # Array or false
-	bundleStyles: [
+	stylesOrder: [
 		'style1.css'
 		'style2.less'
 	] # Array or false
-	bundleScriptPath: 'out/bundled.js' # String or false
-	bundleStylePath: 'out/bundled.css' # String or false
+
+	# Bundling (requires outPath and Order)
+	bundleScriptPath: false # String or false
+	bundleStylePath: false # String or false
 	deleteBundledFiles: true # true or false
 }
 ```
@@ -137,7 +143,17 @@ To generate a source loader file called `src/loader.js` which will load in all y
 	# Paths
 	srcPath: 'src' # String
 
-	# Loaders
+	# Order
+	scriptsOrder: [
+		'script1.js'
+		'script2.coffee'
+	] # Array or false
+	stylesOrder: [
+		'style1.css'
+		'style2.less'
+	] # Array or false
+
+	# Loaders (requires outPath and Order)
 	srcLoaderHeader: '''
 		# Prepare
 		myprojectEl = document.getElementById('myproject-include')
@@ -154,16 +170,6 @@ To generate a source loader file called `src/loader.js` which will load in all y
 		myprojectBuildr.load()
 		''' # note, all \ in this are escaped due to it being in a string
 	srcLoaderPath: 'src/myproject.loader.js' # String or false
-
-	# Bundling
-	bundleScripts: [
-		'script1.js'
-		'script2.coffee'
-	] # Array or false
-	bundleStyles: [
-		'style1.css'
-		'style2.less'
-	] # Array or false
 }
 ```
 
