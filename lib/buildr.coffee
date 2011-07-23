@@ -124,23 +124,12 @@ class Buildr
 		tasks = new util.Group (err) ->
 			console.log 'Checked configuration'
 			next err
-		tasks.total = 5
+		tasks.total = 6
 		console.log 'Checking configuration'
 
 		# Ensure
 		@config.outPath or= @config.srcPath
 
-		# Adjust Atomic Options
-		if @config.srcPath is @config.outPath
-			if @config.deleteBundledFiles
-				@config.deleteBundledFiles = false
-			if @config.compressScripts
-				@config.compressScripts = false
-			if @config.compressStyles
-				@config.compressStyles = false
-			if @config.compressImages
-				@config.compressImages = false
-		
 		# Expand srcPath
 		util.expandPath @config.srcPath, cwd, {}, (err,srcPath) =>
 			return tasks.exit err if err
@@ -180,15 +169,33 @@ class Buildr
 		else
 			tasks.complete false
 
+		# Adjust Atomic Options
+		if @config.srcPath is @config.outPath
+			@config.deleteBundledFiles = false
+			if @config.compressScripts
+				@config.compressScripts =
+					if @config.bundleScriptPath
+						[@config.bundleScriptPath]
+					else
+						false
+			if @config.compressStyles
+				@config.compressStyles =
+					if @config.bundleStylePath
+						[@config.bundleStylePath]
+					else
+						false
+			if @config.compressImages
+				@config.compressImages = false
+		
 		# Auto find files?
 		# Not yet implemented
 		if @config.bundleScripts is true
 			@config.bundleScripts = false
 		if @config.bundleStyles is true
 			@config.bundleStyles = false
-
-		# Completed
-		true
+		
+		# Finish
+		tasks.complete false
 	
 
 	# ---------------------------------
@@ -302,7 +309,7 @@ class Buildr
 
 			# Stringify styles
 			srcLoaderData += "styles = [\n"
-			for style in config.scriptsOrder
+			for style in config.stylesOrder
 				srcLoaderData += "\t'#{style}'\n"
 			srcLoaderData += "\]\n\n"
 
@@ -361,7 +368,6 @@ class Buildr
 		
 		# Prepare
 		source = ''
-		cleanFiles = []
 
 		# Cycle
 		@useOrScan(
@@ -541,6 +547,7 @@ class Buildr
 		
 		# Delete files to clean
 		for fileFullPath in @filesToClean
+			console.log "Cleaning #{fileFullPath}"
 			fs.unlink fileFullPath, tasks.completer()
 
 		# Completed
