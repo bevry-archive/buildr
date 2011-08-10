@@ -9,7 +9,7 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 
 1. Install [CoffeeScript](http://jashkenas.github.com/coffee-script/)
 		
-		npm -g install coffeescript
+		npm install -g coffee-script
 
 1. Install dependencies for image compression
 
