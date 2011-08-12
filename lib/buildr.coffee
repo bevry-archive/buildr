@@ -33,6 +33,9 @@ class Buildr
 
 	# Configuration
 	config: {
+		# Options
+		log: true # true or false, log status updates to console?
+
 		# Paths
 		srcPath: false # String
 		outPath: false # String or false
@@ -84,6 +87,10 @@ class Buildr
 	# =====================================
 	# Actions
 
+	# Log
+	log: (messages...) ->
+		console.log.apply console, messages
+
 	# Process
 	process: (next) ->
 		# Check configuration
@@ -121,11 +128,11 @@ class Buildr
 		return next new Error('srcPath is required')  unless @config.srcPath
 
 		# Prepare
-		tasks = new util.Group (err) ->
-			console.log 'Checked configuration'
+		tasks = new util.Group (err) =>
+			@log 'Checked configuration'
 			next err
 		tasks.total = 6
-		console.log 'Checking configuration'
+		@log 'Checking configuration'
 
 		# Ensure
 		@config.outPath or= @config.srcPath
@@ -207,7 +214,7 @@ class Buildr
 		# Prepare
 		config or= @config
 		return next false  unless config.checkScripts or config.checkStyles
-		console.log 'Check files'
+		@log 'Check files'
 
 		# Handle
 		@forFilesInDirectory(
@@ -222,7 +229,7 @@ class Buildr
 			# Next
 			(err) =>
 				return next err	 if err
-				console.log 'Checked files'
+				@log 'Checked files'
 				next err
 		)
 
@@ -239,16 +246,16 @@ class Buildr
 		# Prepare
 		config or= @config
 		return next false  if config.outPath is config.srcPath
-		console.log "Copying #{config.srcPath} to #{config.outPath}"
+		@log "Copying #{config.srcPath} to #{config.outPath}"
 
 		# Remove outPath
 		util.rmdir config.outPath, (err) =>
 			return next err	 if err
 
 			# Copy srcPath to outPath
-			util.cpdir config.srcPath, config.outPath, (err) ->
+			util.cpdir config.srcPath, config.outPath, (err) =>
 				# Next
-				console.log "Copied #{config.srcPath} to #{config.outPath}"
+				@log "Copied #{config.srcPath} to #{config.outPath}"
 				next err
 	
 		# Completed
@@ -262,11 +269,11 @@ class Buildr
 	# next(err)
 	generateFiles: (next) ->
 		# Prepare
-		tasks = new util.Group (err) ->
-			console.log 'Generated files'
+		tasks = new util.Group (err) =>
+			@log 'Generated files'
 			next err
 		tasks.total += 3
-		console.log 'Generating files'
+		@log 'Generating files'
 
 		# Generate src loader file
 		@generateSrcLoaderFile tasks.completer()
@@ -288,7 +295,7 @@ class Buildr
 		return next false  unless config.srcLoaderPath
 
 		# Log
-		console.log "Generating #{config.srcLoaderPath}"
+		@log "Generating #{config.srcLoaderPath}"
 
 		# Prepare
 		templates = {}
@@ -317,7 +324,7 @@ class Buildr
 			srcLoaderData += templates.srcLoader+"\n\n"+templates.srcLoaderHeader
 
 			# Write in coffee first for debugging
-			fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+			fs.writeFile srcLoaderPath, srcLoaderData, (err) =>
 				# Check
 				return next err  if err
 
@@ -325,12 +332,12 @@ class Buildr
 				srcLoaderData = coffee.compile(srcLoaderData)
 
 				# Now write in javascript
-				fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
+				fs.writeFile srcLoaderPath, srcLoaderData, (err) =>
 					# Check
 					return next err  if err
 
 					# Log
-					console.log "Generated #{config.srcLoaderPath}"
+					@log "Generated #{config.srcLoaderPath}"
 					
 					# Good
 					next false
@@ -364,7 +371,7 @@ class Buildr
 		return next false  unless config.bundleStylePath
 
 		# Log
-		console.log "Generating #{config.bundleStylePath}"
+		@log "Generating #{config.bundleStylePath}"
 		
 		# Prepare
 		source = ''
@@ -442,9 +449,9 @@ class Buildr
 						return next err	 if err
 						
 						# Write
-						fs.writeFile config.bundleStylePath, result, (err) ->
+						fs.writeFile config.bundleStylePath, result, (err) =>
 							# Log
-							console.log "Generated #{config.bundleStylePath}"
+							@log "Generated #{config.bundleStylePath}"
 							
 							# Forward
 							next err, result
@@ -462,7 +469,7 @@ class Buildr
 		return next false  unless config.bundleScriptPath
 
 		# Log
-		console.log "Generating #{config.bundleScriptPath}"
+		@log "Generating #{config.bundleScriptPath}"
 		
 		# Prepare
 		results = {}
@@ -517,9 +524,9 @@ class Buildr
 						result += results[fileRelativePath]
 
 				# Write file
-				fs.writeFile config.bundleScriptPath, result, (err) ->
+				fs.writeFile config.bundleScriptPath, result, (err) =>
 					# Log
-					console.log "Generated #{config.bundleScriptPath}"
+					@log "Generated #{config.bundleScriptPath}"
 					
 					# Forward
 					next err
@@ -540,14 +547,14 @@ class Buildr
 
 		# Prepare
 		tasks = new util.Group (err) =>
-			console.log 'Cleaned outPath'
+			@log 'Cleaned outPath'
 			next err
 		tasks.total += @filesToClean.length
-		console.log 'Cleaning outPath'
+		@log 'Cleaning outPath'
 		
 		# Delete files to clean
 		for fileFullPath in @filesToClean
-			console.log "Cleaning #{fileFullPath}"
+			@log "Cleaning #{fileFullPath}"
 			fs.unlink fileFullPath, tasks.completer()
 
 		# Completed
@@ -563,7 +570,7 @@ class Buildr
 		# Prepare
 		config or= @config
 		return next false  unless config.compressScripts or config.compressStyles or config.compressImages
-		console.log 'Compress files'
+		@log 'Compress files'
 
 		# Handle
 		@forFilesInDirectory(
@@ -578,7 +585,7 @@ class Buildr
 			# Next
 			(err) =>
 				return next err	 if err
-				console.log 'Compressed files'
+				@log 'Compressed files'
 				next err
 		)
 
@@ -770,7 +777,7 @@ class Buildr
 	# next(err)
 	compressImageFile: (fileFullPath,next) ->
 		# Log
-		console.log "Compressing #{fileFullPath}"
+		@log "Compressing #{fileFullPath}"
 
 		# Attempt
 		try
@@ -778,7 +785,7 @@ class Buildr
 			pulverizr.compress fileFullPath, quiet: true
 			
 			# Log
-			console.log "Compressed #{fileFullPath}"
+			@log "Compressed #{fileFullPath}"
 
 			# Forward
 			next false
@@ -808,9 +815,9 @@ class Buildr
 			filename: fileFullPath
 
 		# Compile
-		new (less.Parser)(options).parse src, (err, tree) ->
+		new (less.Parser)(options).parse src, (err, tree) =>
 			if err
-				console.log err
+				@log err
 				next new Error('Less compilation failed'), result
 			else
 				try
@@ -829,22 +836,22 @@ class Buildr
 	# next(err,result)
 	compileStyleFile: (fileFullPath,next,write=true) ->
 		# Log
-		# console.log "Compiling #{fileFullPath}"
+		# @log "Compiling #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compileStyleData fileFullPath, data.toString(), (err,result) ->
+			@compileStyleData fileFullPath, data.toString(), (err,result) =>
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) ->
+				fs.writeFile fileFullPath, result, (err) =>
 					return next err	 if err
 
 					# Log
-					# console.log "Compiled #{fileFullPath}"
+					# @log "Compiled #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -866,9 +873,9 @@ class Buildr
 			filename: fileFullPath
 
 		# Compress
-		new (less.Parser)(options).parse src, (err, tree) ->
+		new (less.Parser)(options).parse src, (err, tree) =>
 			if err
-				console.log err
+				@log err
 				next new Error('Less compilation failed'), result
 			else
 				try
@@ -887,7 +894,7 @@ class Buildr
 	# next(err,result)
 	compressStyleFile: (fileFullPath,next,write=true) ->
 		# Log
-		console.log "Compressing #{fileFullPath}"
+		@log "Compressing #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -902,7 +909,7 @@ class Buildr
 					return next err	 if err
 
 					# Log
-					console.log "Compressed #{fileFullPath}"
+					@log "Compressed #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -937,7 +944,7 @@ class Buildr
 
 		# Output
 		if errord
-			console.log csslint.getFormatter(formatId).formatResults(result, fileFullPath, formatId)
+			@log csslint.getFormatter(formatId).formatResults(result, fileFullPath, formatId)
 
 		# Forward
 		next false, errord
@@ -947,7 +954,7 @@ class Buildr
 	# next(err,errord)
 	checkStyleFile: (fileFullPath,next) ->
 		# Log
-		console.log "Checking #{fileFullPath}"
+		@log "Checking #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -955,11 +962,11 @@ class Buildr
 			return next err, false  if err
 
 			# Check
-			@checkStyleData fileFullPath, data.toString(), (err,errord) ->
+			@checkStyleData fileFullPath, data.toString(), (err,errord) =>
 				return next err	 if err
 				
 				# Log
-				console.log "Checked #{fileFullPath}"
+				@log "Checked #{fileFullPath}"
 
 				# Forward
 				return next err, errord
@@ -999,22 +1006,22 @@ class Buildr
 	# next(err,result)
 	compileScriptFile: (fileFullPath,next,write=true) ->
 		# Log
-		# console.log "Compiling #{fileFullPath}"
+		# @log "Compiling #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compileScriptData path.extname(fileFullPath), data.toString(), (err,result) ->
+			@compileScriptData path.extname(fileFullPath), data.toString(), (err,result) =>
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) ->
+				fs.writeFile fileFullPath, result, (err) =>
 					return next err	 if err
 
 					# Log
-					# console.log "Compiled #{fileFullPath}"
+					# @log "Compiled #{fileFullPath}"
 
 					# Forward
 					next err, result
@@ -1041,22 +1048,22 @@ class Buildr
 	# next(err,result)
 	compressScriptFile: (fileFullPath,next,write=true) ->
 		# Log
-		console.log "Compressing #{fileFullPath}"
+		@log "Compressing #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compressScriptData data.toString(), (err,result) ->
+			@compressScriptData data.toString(), (err,result) =>
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) ->
+				fs.writeFile fileFullPath, result, (err) =>
 					return next err	 if err
 
 					# Log
-					console.log "Compressed #{fileFullPath}"
+					@log "Compressed #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -1084,7 +1091,7 @@ class Buildr
 			return next false, false
 		
 		# Log the file
-		console.log "\n#{fileFullPath}:"
+		@log "\n#{fileFullPath}:"
 
 		# Log the errors
 		for error in result.errors
@@ -1101,7 +1108,7 @@ class Buildr
 					"\n\t" + error.evidence.replace(/^\s+/, '')
 				else
 					''
-			console.log "\tLine #{error.line}: #{message} #{evidence}\n"
+			@log "\tLine #{error.line}: #{message} #{evidence}\n"
 		
 		# Forward
 		next false, errord
@@ -1111,7 +1118,7 @@ class Buildr
 	# next(err,errord)
 	checkScriptFile: (fileFullPath,next) ->
 		# Log
-		console.log "Checking #{fileFullPath}"
+		@log "Checking #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -1119,7 +1126,7 @@ class Buildr
 			return next err, false  if err
 
 			# Check
-			@checkScriptData fileFullPath, data.toString(), (err,errord) ->
+			@checkScriptData fileFullPath, data.toString(), (err,errord) =>
 				return next err	 if err
 
 				# Log
