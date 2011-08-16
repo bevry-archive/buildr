@@ -76,10 +76,12 @@ class Buildr
 		# Prepare
 		config or= {}
 
-		# Apply
-		for own key, value of config
-			@config[key] = value
-		
+		# Apply prototype config to local config
+		# Then apply local config to class config
+		for own key,value of @config
+			config[key] = value  unless config[key]?
+		@config = config
+
 		# Completed
 		true
 
@@ -89,7 +91,8 @@ class Buildr
 
 	# Log
 	log: (messages...) ->
-		console.log.apply console, messages
+		if @config.log
+			console.log.apply console, messages
 
 	# Process
 	process: (next) ->
@@ -362,7 +365,7 @@ class Buildr
 
 		# Completed
 		true
-
+	
 	# Generate out style file
 	# next(err)
 	generateBundledStyleFile: (next,config) ->
@@ -402,12 +405,18 @@ class Buildr
 							@filesToClean.push _fileFullPath
 						@filesToClean.push fileFullPath
 
+						# Get relative bundled path
+						bundledRelativePath = @getRelativePath(
+							config.bundleStylePath
+							fileFullPath
+						)
+
 						# Check if less path exists
 						path.exists fileFullPath, (exists) ->
 							# It does
 							if exists
 								# Append source
-								source += """@import "#{fileRelativePath}";\n"""
+								source += """@import "#{bundledRelativePath}";\n"""
 								next false
 							# It doesn't
 							else
@@ -415,7 +424,7 @@ class Buildr
 								util.cp _fileFullPath, fileFullPath, (err) ->
 									return next err	 if err
 									# Append source
-									source += """@import "#{fileRelativePath}";\n"""
+									source += """@import "#{bundledRelativePath}";\n"""
 									next false
 					
 					# Less
@@ -424,8 +433,14 @@ class Buildr
 						if config.deleteBundledFiles
 							@filesToClean.push fileFullPath
 
+						# Get relative bundled path
+						bundledRelativePath = @getRelativePath(
+							config.bundleStylePath
+							fileFullPath
+						)
+
 						# Append source
-						source += """@import "#{fileRelativePath}";\n"""
+						source += """@import "#{bundledRelativePath}";\n"""
 						next false
 					
 					# Something else
@@ -435,6 +450,10 @@ class Buildr
 			# Next
 			(err) =>
 				return next err 	if err
+
+				# Log
+				@log "Compiling #{config.bundleStylePath}"
+				@log source
 
 				# Compile file
 				@compileStyleData(
@@ -595,6 +614,24 @@ class Buildr
 
 	# =====================================
 	# Helpers
+
+	# Determine relative path
+	getRelativePath: (srcPath,dstPath) ->
+		srcParts = srcPath.split /[\/\\]/g
+		dstParts = dstPath.split /[\/\\]/g
+
+		outParts = []
+		stillCommon = null
+		for srcPart,i in srcParts
+			if stillCommon is null
+				if srcPart isnt dstParts[i]
+					stillCommon = i
+			else
+				outParts.push '..'
+		for dstPart,i in dstParts[stillCommon..]
+			outParts.push dstPart
+		
+		outPath = outParts.join '/'
 
 	# For each file in an array
 	# callback(fileFullPath,fileRelativePath,next)
@@ -901,11 +938,11 @@ class Buildr
 			return next err	 if err
 
 			# Compress
-			@compressStyleData fileFullPath, data.toString(), (err,result) ->
+			@compressStyleData fileFullPath, data.toString(), (err,result) =>
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) ->
+				fs.writeFile fileFullPath, result, (err) =>
 					return next err	 if err
 
 					# Log
@@ -1130,7 +1167,7 @@ class Buildr
 				return next err	 if err
 
 				# Log
-				console.log "Checked #{fileFullPath}"
+				@log "Checked #{fileFullPath}"
 
 				# Forward
 				return next err, errord

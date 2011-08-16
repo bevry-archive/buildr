@@ -241,8 +241,11 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ### Changelog
 
 - v0.6 July 21, 2011
-	- Added javascript, image and css compression
-	- Added jshint and csslint checks
+	- v0.6.0 July 21, 2011
+		- Added javascript, image and css compression
+		- Added jshint and csslint checks
+	- v0.6.6 August 16, 2011
+		- Fixed relative paths between outPath and bundledPaths
 
 - v0.5 July 9, 2011
 	- Added srcLoader compilation
