@@ -72,10 +72,10 @@ Before you use Buildr, you must specify some configuration for it. The available
 	scriptsOrder: false # Array or false
 	stylesOrder: false # Array or false
 
-	# Bundling (requires outPath and Order)
+	# Bundling (requires Order)
 	bundleScriptPath: false # String or false
 	bundleStylePath: false # String or false
-	deleteBundledFiles: true # true or false
+	deleteBundledFiles: true # (requires outPath) true or false 
 
 	# Loaders (requires Order)
 	srcLoaderHeader: false # String or false
