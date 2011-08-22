@@ -37,6 +37,22 @@ Before you use Buildr, you must specify some configuration for it. The available
 
 ``` coffeescript
 {
+	# Options
+	log: true # (log status updates to console?) true or false
+	watch: false # (automatically rebuild on file change?) true or false
+
+	# Handlers
+	buildHandler: (err) -> # (fired when build completed) function or false
+		if err
+			console.log err
+			throw err
+		console.log 'Building completed\n'
+	rebuildHandler: (err) -> # (fired when rebuild completed) function or false
+		if err
+			console.log err
+			throw err
+		console.log 'ReBuilding completed\n'
+	
 	# Paths
 	srcPath: false # String
 	outPath: false # String or false
@@ -46,7 +62,7 @@ Before you use Buildr, you must specify some configuration for it. The available
 	checkStyles: true # Array or true or false
 	jshintOptions: false # Object or false
 	csslintOptions: false # Object or false
-	
+
 	# Compression (requires outPath)
 	compressScripts: true # Array or true or false
 	compressStyles: true # Array or true or false
@@ -70,9 +86,35 @@ Before you use Buildr, you must specify some configuration for it. The available
 The above values are the default values for those options. The settings which are set to `true` will autodect the files for you.
 
 
+### Options
+
+There are currently two options available, the `log` and `watch` options.
+
+- The `log` option when enabled will output all status messages, by default this is enabled.
+- The `watch` option when enabled will allow buildr to run in the background watching for changes in our `srcPath`, if a change is detected then our project is automatically rebuilt for us, by default this is disabled.
+
+``` coffeescript
+{
+	# Options
+	log: true # (log status updates to console?) true or false
+	watch: false # (automatically rebuild on file change?) true or false
+}
+```
+
+
+### Handlers
+
+There are two handlers you can configure, they are the `buildHandler` and the `rebuildHandler`.
+
+- The `buildHandler` is fired after our project has been built.
+- The `rebuildHandler` is fired after our project has been rebuilt. Our project is rebuilt when we utilise the `watch: true` config option, which scans for changes in the background and automatically rebuilds our project on change. If this isn't specified, then the `buildHandler` will automatically be used as the `rebuildHandler`.
+
+They are both passed a single argument called `err` which is either an `Error` instance, or `false` if no error occurred. They both also have default values, so you don't need to specify them if you don't want to.
+
+
 ### Checking
 
-To pass your scripts through jshint, and your styles through csslint, you'd want the following configuration:
+To pass your scripts through jshint and your styles through csslint, you'd want the following configuration:
 
 ``` coffeescript
 {
@@ -98,12 +140,14 @@ To copy your `src` directory to an `out` directory, then compile and compress al
 	srcPath: 'src' # String
 	outPath: 'out' # String or false
 
-	# Compression (requires outPath)
+	# Compression (without outPath only the generated bundle files are compressed)
 	compressScripts: true # Array or true or false
 	compressStyles: true # Array or true or false
 	compressImages: true # Array or true or false
 }
 ```
+
+If your `outPath` is the same as your `srcPath` then the only files which will be compressed are the generated bundle files.
 
 
 ### Bundling
@@ -126,10 +170,10 @@ To bundle all your style files into one file called `out/bundled.css` and all yo
 		'style2.less'
 	] # Array or false
 
-	# Bundling (requires outPath and Order)
+	# Bundling (requires Order)
 	bundleScriptPath: false # String or false
 	bundleStylePath: false # String or false
-	deleteBundledFiles: true # true or false
+	deleteBundledFiles: true # (requires outPath) true or false 
 }
 ```
 
@@ -239,6 +283,9 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ## History
 
 ### Changelog
+
+- v0.7 August 22, 2011
+	- Added `watch`, `buildHandler` and `rebuildrHandler` options
 
 - v0.6 July 21, 2011
 	- v0.6.0 July 21, 2011

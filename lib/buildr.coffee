@@ -11,6 +11,7 @@ uglify = require 'uglify-js'
 jsp = uglify.parser
 pro = uglify.uglify
 cwd = process.cwd()
+watchTree = false
 
 
 
@@ -34,8 +35,21 @@ class Buildr
 	# Configuration
 	config: {
 		# Options
-		log: true # true or false, log status updates to console?
+		log: true # (log status updates to console?) true or false
+		watch: false # (automatically rebuild on file change?) true or false
 
+		# Handlers
+		buildHandler: (err) -> # (fired when build completed) function or false
+			if err
+				console.log err
+				throw err
+			console.log 'Building completed\n'
+		rebuildHandler: (err) -> # (fired when rebuild completed) function or false
+			if err
+				console.log err
+				throw err
+			console.log 'ReBuilding completed\n'
+		
 		# Paths
 		srcPath: false # String
 		outPath: false # String or false
@@ -45,8 +59,8 @@ class Buildr
 		checkStyles: true # Array or true or false
 		jshintOptions: false # Object or false
 		csslintOptions: false # Object or false
-		
-		# Compression (requires outPath)
+
+		# Compression (without outPath only the generated bundle files are compressed)
 		compressScripts: true # Array or true or false
 		compressStyles: true # Array or true or false
 		compressImages: true # Array or true or false
@@ -55,10 +69,10 @@ class Buildr
 		scriptsOrder: false # Array or false
 		stylesOrder: false # Array or false
 
-		# Bundling (requires outPath and Order)
+		# Bundling (requires Order)
 		bundleScriptPath: false # String or false
 		bundleStylePath: false # String or false
-		deleteBundledFiles: true # true or false
+		deleteBundledFiles: true # (requires outPath) true or false 
 
 		# Loaders (requires Order)
 		srcLoaderHeader: false # String or false
@@ -70,6 +84,9 @@ class Buildr
 
 	# Error
 	errors: []
+
+	# Watching
+	watching: false
 
 	# Constructor
 	constructor: (config) ->
@@ -93,9 +110,55 @@ class Buildr
 	log: (messages...) ->
 		if @config.log
 			console.log.apply console, messages
+	
+	# Watch
+	watch: (next) ->
+		# Check
+		return  if @watching
+		@watching = true
+
+		# Requires
+		watchTree = require 'watch-tree'	unless watchTree
+
+		# Prepare
+		buildr = @
+		next or= @config.rebuildHandler or @config.buildHandler
+
+		# Log
+		console.log 'Setting up watching...'
+
+		# Watch the src directory
+		watcher = watchTree.watchTree @config.srcPath
+		watcher.on 'fileDeleted', (path) ->
+			buildr.process ->
+				console.log 'Rebuilt due to file delete at '+(new Date()).toLocaleString()
+				next.apply(next,arguments)
+		watcher.on 'fileCreated', (path,stat) ->
+			buildr.process ->
+				console.log 'Rebuilt due to file create at '+(new Date()).toLocaleString()
+				next.apply(next,arguments)
+		watcher.on 'fileModified', (path,stat) ->
+			buildr.process ->
+				console.log 'Rebuilt due to file change at '+(new Date()).toLocaleString()
+				next.apply(next,arguments)
+
+		# Log
+		console.log 'Watching setup'
+
+		# Next
+		next false
 
 	# Process
 	process: (next) ->
+		# Prepare
+		next or= @config.buildHandler
+
+		# Watch
+		if @config.watch then @watch()
+
+		# Log
+		console.log 'Processing started'
+
 		# Check configuration
 		@checkConfiguration (err) =>
 			return next err	 if err
@@ -118,6 +181,7 @@ class Buildr
 
 							# Compress outPath
 							@compressFiles (err) =>
+								console.log 'Processing finished'
 								next err
 	
 
