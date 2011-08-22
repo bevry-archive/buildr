@@ -93,14 +93,6 @@ There are currently two options available, the `log` and `watch` options.
 - The `log` option when enabled will output all status messages, by default this is enabled.
 - The `watch` option when enabled will allow buildr to run in the background watching for changes in our `srcPath`, if a change is detected then our project is automatically rebuilt for us, by default this is disabled.
 
-``` coffeescript
-{
-	# Options
-	log: true # (log status updates to console?) true or false
-	watch: false # (automatically rebuild on file change?) true or false
-}
-```
-
 
 ### Handlers
 
