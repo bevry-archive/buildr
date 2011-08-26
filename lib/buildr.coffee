@@ -12,7 +12,7 @@ jsp = uglify.parser
 pro = uglify.uglify
 cwd = process.cwd()
 watchTree = false
-
+alreadyImported = {}
 
 
 # =====================================
@@ -1092,6 +1092,20 @@ class Buildr
 		try
 			switch extension
 				when '.coffee'
+					rx = /@import\s+['"](.+?)['"]/g
+					while m = rx.exec(src)
+						# Read @import file
+						data = ''
+						if !alreadyImported[m[1]]
+							fs.readFile m[1], (err,data) =>
+								return next err	 if err
+
+								src.replace(new Regex(m[0]), data) // replace first occurance with actual file contents
+
+						// TODO: how block this until after file read has completed?
+						src.replace(new Regex(m[0], 'g', '') // remove subsequent occurances
+						alreadyImported[m[1]] = true; // remember not to import again
+
 					result = coffee.compile src
 				when '.js'
 					result = src
