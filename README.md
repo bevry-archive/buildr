@@ -277,7 +277,7 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ### Changelog
 
 - v0.7 August 22, 2011
-	- Added `watch`, `buildHandler` and `rebuildrHandler` options
+	- Added `watch`, `buildHandler` and `rebuildHandler` options
 
 - v0.6 July 21, 2011
 	- v0.6.0 July 21, 2011
