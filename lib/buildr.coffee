@@ -12,8 +12,7 @@ jsp = uglify.parser
 pro = uglify.uglify
 cwd = process.cwd()
 watchTree = false
-
-
+caterpillar = require 'caterpillar'
 
 # =====================================
 # Prototypes
@@ -35,35 +34,29 @@ class Buildr
 	# Configuration
 	config: {
 		# Options
+		name: null # (name to be outputted in log messages) String or null
 		log: true # (log status updates to console?) true or false
 		watch: false # (automatically rebuild on file change?) true or false
 
 		# Handlers
-		buildHandler: (err) -> # (fired when build completed) function or false
-			if err
-				console.log err
-				throw err
-			console.log 'Building completed\n'
-		rebuildHandler: (err) -> # (fired when rebuild completed) function or false
-			if err
-				console.log err
-				throw err
-			console.log 'ReBuilding completed\n'
+		buildHandler: false # (fired when build completed) function or false
+		rebuildHandler: false # (fired when rebuild completed) function or false
+		successHandler: false # (fired when (re)build completed successfully) function or false
 		
 		# Paths
 		srcPath: false # String
 		outPath: false # String or false
 
 		# Checking
-		checkScripts: true # Array or true or false
-		checkStyles: true # Array or true or false
+		checkScripts: false # Array or true or false
+		checkStyles: false # Array or true or false
 		jshintOptions: false # Object or false
 		csslintOptions: false # Object or false
 
 		# Compression (without outPath only the generated bundle files are compressed)
-		compressScripts: true # Array or true or false
-		compressStyles: true # Array or true or false
-		compressImages: true # Array or true or false
+		compressScripts: false # Array or true or false
+		compressStyles: false # Array or true or false
+		compressImages: false # Array or true or false
 
 		# Order
 		scriptsOrder: false # Array or false
@@ -72,7 +65,7 @@ class Buildr
 		# Bundling (requires Order)
 		bundleScriptPath: false # String or false
 		bundleStylePath: false # String or false
-		deleteBundledFiles: true # (requires outPath) true or false 
+		deleteBundledFiles: false # (requires outPath) true or false 
 
 		# Loaders (requires Order)
 		srcLoaderHeader: false # String or false
@@ -88,17 +81,46 @@ class Buildr
 	# Watching
 	watching: false
 
+	# Processing
+	processing: false
+
+	# Logger
+	logger: false
+
 	# Constructor
-	constructor: (config) ->
+	constructor: (options={}) ->
 		# Prepare
-		config or= {}
+		@filesToClean = []
+		@errors = []
 
-		# Apply prototype config to local config
-		# Then apply local config to class config
-		for own key,value of @config
-			config[key] = value  unless config[key]?
-		@config = config
+		# Apply configuration
+		tmp = {}
+		tmp[key] = value  for own key,value of @config
+		tmp[key] = value  for own key,value of options
+		@config = tmp
 
+		# Handlers
+		@config.buildHandler or= (err) =>
+			if err
+				@log 'error', err
+				throw err
+			@log 'info', 'Building completed'
+			@config.successHandler.call(@)  if @config.successHandler
+		@config.rebuildHandler or= (err) =>
+			if err
+				@log 'error', err
+				throw err
+			@log 'info', 'ReBuilding completed'
+			@config.successHandler.call(@) if @config.successHandler
+
+		# Logger
+		if @config.log is true then @config.log = 7
+		@logger or= @config.logger or new caterpillar.Logger
+			transports:
+				level: @config.log or 6
+				formatter:
+					module: module
+		
 		# Completed
 		true
 
@@ -107,57 +129,69 @@ class Buildr
 	# Actions
 
 	# Log
-	log: (messages...) ->
-		if @config.log
-			console.log.apply console, messages
-	
+	log: (args...) =>
+		type = args.shift()
+		args.unshift "[#{@config.name}]"
+		args.unshift type
+		@logger.log.apply(@logger,args)
+
 	# Watch
 	watch: (next) ->
 		# Check
-		return  if @watching
-		@watching = true
+		if @watching
+			return
+		else
+			@watching = true
 
 		# Requires
 		watchTree = require 'watch-tree'	unless watchTree
 
 		# Prepare
 		buildr = @
+		log = @log
 		next or= @config.rebuildHandler or @config.buildHandler
 
 		# Log
-		console.log 'Setting up watching...'
+		log 'debug', 'Setting up watching...'
 
 		# Watch the src directory
 		watcher = watchTree.watchTree @config.srcPath
 		watcher.on 'fileDeleted', (path) ->
 			buildr.process ->
-				console.log 'Rebuilt due to file delete at '+(new Date()).toLocaleString()
+				log 'info', 'Rebuilt due to file delete at '+(new Date()).toLocaleString()
 				next.apply(next,arguments)
 		watcher.on 'fileCreated', (path,stat) ->
 			buildr.process ->
-				console.log 'Rebuilt due to file create at '+(new Date()).toLocaleString()
+				log 'info', 'Rebuilt due to file create at '+(new Date()).toLocaleString()
 				next.apply(next,arguments)
 		watcher.on 'fileModified', (path,stat) ->
 			buildr.process ->
-				console.log 'Rebuilt due to file change at '+(new Date()).toLocaleString()
+				log 'info', 'Rebuilt due to file change at '+(new Date()).toLocaleString()
 				next.apply(next,arguments)
 
 		# Log
-		console.log 'Watching setup'
+		log 'debug', 'Watching setup'
 
 		# Next
 		next false
 
 	# Process
 	process: (next) ->
+		# Check
+		if @processing
+			log 'info', 'Processing postponed'
+			return
+		@processing = true
+		
 		# Prepare
+		log = @log
 		next or= @config.buildHandler
 
-		# Watch
-		if @config.watch then @watch()
-
 		# Log
-		console.log 'Processing started'
+		log 'info', 'Processing started'
+
+		# Watch
+		@watch()  if @config.watch
 
 		# Check configuration
 		@checkConfiguration (err) =>
@@ -181,7 +215,8 @@ class Buildr
 
 							# Compress outPath
 							@compressFiles (err) =>
-								console.log 'Processing finished'
+								@processing = false
+								log 'info', 'Processing finished'
 								next err
 	
 
@@ -195,11 +230,12 @@ class Buildr
 		return next new Error('srcPath is required')  unless @config.srcPath
 
 		# Prepare
+		log = @log
 		tasks = new util.Group (err) =>
-			@log 'Checked configuration'
+			log 'debug', 'Checked configuration'
 			next err
 		tasks.total = 6
-		@log 'Checking configuration'
+		log 'debug', 'Checking configuration'
 
 		# Ensure
 		@config.outPath or= @config.srcPath
@@ -279,9 +315,10 @@ class Buildr
 	# next(err)
 	checkFiles: (next,config) ->
 		# Prepare
+		log = @log
 		config or= @config
 		return next false  unless config.checkScripts or config.checkStyles
-		@log 'Check files'
+		log 'debug', 'Check files'
 
 		# Handle
 		@forFilesInDirectory(
@@ -294,9 +331,9 @@ class Buildr
 				@checkFile fileFullPath, next
 			
 			# Next
-			(err) =>
+			(err) ->
 				return next err	 if err
-				@log 'Checked files'
+				log 'debug', 'Checked files'
 				next err
 		)
 
@@ -311,18 +348,19 @@ class Buildr
 	# next(err)
 	cpSrcToOut: (next,config) ->
 		# Prepare
+		log = @log
 		config or= @config
 		return next false  if config.outPath is config.srcPath
-		@log "Copying #{config.srcPath} to #{config.outPath}"
+		log 'debug', "Copying #{config.srcPath} to #{config.outPath}"
 
 		# Remove outPath
-		util.rmdir config.outPath, (err) =>
+		util.rmdir config.outPath, (err) ->
 			return next err	 if err
 
 			# Copy srcPath to outPath
-			util.cpdir config.srcPath, config.outPath, (err) =>
+			util.cpdir config.srcPath, config.outPath, (err) ->
 				# Next
-				@log "Copied #{config.srcPath} to #{config.outPath}"
+				log 'debug', "Copied #{config.srcPath} to #{config.outPath}"
 				next err
 	
 		# Completed
@@ -336,11 +374,12 @@ class Buildr
 	# next(err)
 	generateFiles: (next) ->
 		# Prepare
-		tasks = new util.Group (err) =>
-			@log 'Generated files'
+		log = @log
+		tasks = new util.Group (err) ->
+			log 'debug', 'Generated files'
 			next err
 		tasks.total += 3
-		@log 'Generating files'
+		log 'debug', 'Generating files'
 
 		# Generate src loader file
 		@generateSrcLoaderFile tasks.completer()
@@ -362,7 +401,7 @@ class Buildr
 		return next false  unless config.srcLoaderPath
 
 		# Log
-		@log "Generating #{config.srcLoaderPath}"
+		log 'debug', "Generating #{config.srcLoaderPath}"
 
 		# Prepare
 		templates = {}
@@ -391,7 +430,7 @@ class Buildr
 			srcLoaderData += templates.srcLoader+"\n\n"+templates.srcLoaderHeader
 
 			# Write in coffee first for debugging
-			fs.writeFile srcLoaderPath, srcLoaderData, (err) =>
+			fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
 				# Check
 				return next err  if err
 
@@ -399,12 +438,12 @@ class Buildr
 				srcLoaderData = coffee.compile(srcLoaderData)
 
 				# Now write in javascript
-				fs.writeFile srcLoaderPath, srcLoaderData, (err) =>
+				fs.writeFile srcLoaderPath, srcLoaderData, (err) ->
 					# Check
 					return next err  if err
 
 					# Log
-					@log "Generated #{config.srcLoaderPath}"
+					log 'debug', "Generated #{config.srcLoaderPath}"
 					
 					# Good
 					next false
@@ -434,11 +473,12 @@ class Buildr
 	# next(err)
 	generateBundledStyleFile: (next,config) ->
 		# Check
+		log = @log
 		config or= @config
 		return next false  unless config.bundleStylePath
 
 		# Log
-		@log "Generating #{config.bundleStylePath}"
+		log 'debug', "Generating #{config.bundleStylePath}"
 		
 		# Prepare
 		source = ''
@@ -516,8 +556,7 @@ class Buildr
 				return next err 	if err
 
 				# Log
-				@log "Compiling #{config.bundleStylePath}"
-				@log source
+				log 'debug', "Compiling #{config.bundleStylePath}"
 
 				# Compile file
 				@compileStyleData(
@@ -528,13 +567,13 @@ class Buildr
 					source
 
 					# Next
-					(err,result) =>
+					(err,result) ->
 						return next err	 if err
 						
 						# Write
-						fs.writeFile config.bundleStylePath, result, (err) =>
+						fs.writeFile config.bundleStylePath, result, (err) ->
 							# Log
-							@log "Generated #{config.bundleStylePath}"
+							log 'debug', "Generated #{config.bundleStylePath}"
 							
 							# Forward
 							next err, result
@@ -548,11 +587,12 @@ class Buildr
 	# next(err)
 	generateBundledScriptFile: (next,config) ->
 		# Check
+		log = @log
 		config or= @config
 		return next false  unless config.bundleScriptPath
 
 		# Log
-		@log "Generating #{config.bundleScriptPath}"
+		log 'debug', "Generating #{config.bundleScriptPath}"
 		
 		# Prepare
 		results = {}
@@ -594,7 +634,7 @@ class Buildr
 						next false
 				
 			# Next
-			(err) =>
+			(err) ->
 				return next err	 if err
 
 				# Prepare
@@ -607,9 +647,9 @@ class Buildr
 						result += results[fileRelativePath]
 
 				# Write file
-				fs.writeFile config.bundleScriptPath, result, (err) =>
+				fs.writeFile config.bundleScriptPath, result, (err) ->
 					# Log
-					@log "Generated #{config.bundleScriptPath}"
+					log 'debug', "Generated #{config.bundleScriptPath}"
 					
 					# Forward
 					next err
@@ -629,15 +669,16 @@ class Buildr
 		return next false  unless (@filesToClean||[]).length
 
 		# Prepare
-		tasks = new util.Group (err) =>
-			@log 'Cleaned outPath'
+		log = @log
+		tasks = new util.Group (err) ->
+			log 'debug', 'Cleaned outPath'
 			next err
 		tasks.total += @filesToClean.length
-		@log 'Cleaning outPath'
+		log 'debug', 'Cleaning outPath'
 		
 		# Delete files to clean
 		for fileFullPath in @filesToClean
-			@log "Cleaning #{fileFullPath}"
+			log 'debug', "Cleaning #{fileFullPath}"
 			fs.unlink fileFullPath, tasks.completer()
 
 		# Completed
@@ -653,7 +694,23 @@ class Buildr
 		# Prepare
 		config or= @config
 		return next false  unless config.compressScripts or config.compressStyles or config.compressImages
-		@log 'Compress files'
+		
+		# Prepare
+		log = @log
+		tasks = new util.Group (err) ->
+			log 'debug', 'Compressed files'
+			next err
+		tasks.total += 1
+		log 'debug', 'Compressing files'
+
+		# Bundled Files
+		if config.compressScripts is true
+			if config.bundleScriptPath
+				++tasks.total
+				@compressFile config.bundleScriptPath, tasks.completer()
+			if config.bundleStylePath
+				++tasks.total
+				@compressFile config.bundleStylePath, tasks.completer()
 
 		# Handle
 		@forFilesInDirectory(
@@ -666,10 +723,7 @@ class Buildr
 				@compressFile fileFullPath, next
 			
 			# Next
-			(err) =>
-				return next err	 if err
-				@log 'Compressed files'
-				next err
+			tasks.completer()
 		)
 
 		# Completed
@@ -705,6 +759,7 @@ class Buildr
 		return next false  unless (files||[]).length
 
 		# Prepare
+		log = @log
 		tasks = new util.Group (err) =>
 			next err
 		tasks.total += files.length
@@ -877,8 +932,11 @@ class Buildr
 	# Compress Image File
 	# next(err)
 	compressImageFile: (fileFullPath,next) ->
+		# Prepare
+		log = @log
+
 		# Log
-		@log "Compressing #{fileFullPath}"
+		log 'debug', "Compressing #{fileFullPath}"
 
 		# Attempt
 		try
@@ -886,7 +944,7 @@ class Buildr
 			pulverizr.compress fileFullPath, quiet: true
 			
 			# Log
-			@log "Compressed #{fileFullPath}"
+			log 'debug', "Compressed #{fileFullPath}"
 
 			# Forward
 			next false
@@ -909,6 +967,7 @@ class Buildr
 	# next(err,result)
 	compileStyleData: (fileFullPath,src,next) ->
 		# Prepare
+		log = @log
 		result = ''
 		options =
 			paths: [path.dirname(fileFullPath)]
@@ -916,9 +975,9 @@ class Buildr
 			filename: fileFullPath
 
 		# Compile
-		new (less.Parser)(options).parse src, (err, tree) =>
+		new (less.Parser)(options).parse src, (err, tree) ->
 			if err
-				@log err
+				log 'debug', err
 				next new Error('Less compilation failed'), result
 			else
 				try
@@ -936,23 +995,26 @@ class Buildr
 	# Compile Style File
 	# next(err,result)
 	compileStyleFile: (fileFullPath,next,write=true) ->
+		# Prepare
+		log = @log
+
 		# Log
-		# @log "Compiling #{fileFullPath}"
+		# log 'debug', "Compiling #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compileStyleData fileFullPath, data.toString(), (err,result) =>
+			@compileStyleData fileFullPath, data.toString(), (err,result) ->
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) =>
+				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
 					# Log
-					# @log "Compiled #{fileFullPath}"
+					# log 'debug', "Compiled #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -967,6 +1029,7 @@ class Buildr
 	# next(err,result)
 	compressStyleData: (fileFullPath,src,next) ->
 		# Prepare
+		log = @log
 		result = ''
 		options =
 			paths: [path.dirname(fileFullPath)]
@@ -974,9 +1037,9 @@ class Buildr
 			filename: fileFullPath
 
 		# Compress
-		new (less.Parser)(options).parse src, (err, tree) =>
+		new (less.Parser)(options).parse src, (err, tree) ->
 			if err
-				@log err
+				log 'debug', err
 				next new Error('Less compilation failed'), result
 			else
 				try
@@ -994,23 +1057,26 @@ class Buildr
 	# Compress Style File
 	# next(err,result)
 	compressStyleFile: (fileFullPath,next,write=true) ->
+		# Prepare
+		log = @log
+
 		# Log
-		@log "Compressing #{fileFullPath}"
+		log 'debug', "Compressing #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compress
-			@compressStyleData fileFullPath, data.toString(), (err,result) =>
+			@compressStyleData fileFullPath, data.toString(), (err,result) ->
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) =>
+				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
 					# Log
-					@log "Compressed #{fileFullPath}"
+					log 'debug', "Compressed #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -1025,6 +1091,7 @@ class Buildr
 	# next(err,errord)
 	checkStyleData: (fileFullPath,src,next,config) ->
 		# Prepare
+		log = @log
 		config or= @config
 		errord = false
 
@@ -1045,7 +1112,7 @@ class Buildr
 
 		# Output
 		if errord
-			@log csslint.getFormatter(formatId).formatResults(result, fileFullPath, formatId)
+			log 'error', csslint.getFormatter(formatId).formatResults(result, fileFullPath, formatId)
 
 		# Forward
 		next false, errord
@@ -1054,8 +1121,11 @@ class Buildr
 	# Check Style File
 	# next(err,errord)
 	checkStyleFile: (fileFullPath,next) ->
+		# Prepare
+		log = @log
+
 		# Log
-		@log "Checking #{fileFullPath}"
+		log 'debug', "Checking #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -1063,11 +1133,11 @@ class Buildr
 			return next err, false  if err
 
 			# Check
-			@checkStyleData fileFullPath, data.toString(), (err,errord) =>
+			@checkStyleData fileFullPath, data.toString(), (err,errord) ->
 				return next err	 if err
 				
 				# Log
-				@log "Checked #{fileFullPath}"
+				log 'debug', "Checked #{fileFullPath}"
 
 				# Forward
 				return next err, errord
@@ -1106,23 +1176,26 @@ class Buildr
 	# Compile Script File
 	# next(err,result)
 	compileScriptFile: (fileFullPath,next,write=true) ->
+		# Prepare
+		log = @log
+
 		# Log
-		# @log "Compiling #{fileFullPath}"
+		# log 'debug', "Compiling #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compileScriptData path.extname(fileFullPath), data.toString(), (err,result) =>
+			@compileScriptData path.extname(fileFullPath), data.toString(), (err,result) ->
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) =>
+				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
 					# Log
-					# @log "Compiled #{fileFullPath}"
+					# log 'debug', "Compiled #{fileFullPath}"
 
 					# Forward
 					next err, result
@@ -1148,23 +1221,26 @@ class Buildr
 	# Compress Script File
 	# next(err,result)
 	compressScriptFile: (fileFullPath,next,write=true) ->
+		# Prepare
+		log = @log
+
 		# Log
-		@log "Compressing #{fileFullPath}"
+		log 'debug', "Compressing #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
 			return next err	 if err
 
 			# Compile
-			@compressScriptData data.toString(), (err,result) =>
+			@compressScriptData data.toString(), (err,result) ->
 				return next err, result  if err or !write
 
 				# Write
-				fs.writeFile fileFullPath, result, (err) =>
+				fs.writeFile fileFullPath, result, (err) ->
 					return next err	 if err
 
 					# Log
-					@log "Compressed #{fileFullPath}"
+					log 'debug', "Compressed #{fileFullPath}"
 				
 					# Forward
 					next err, result
@@ -1179,6 +1255,7 @@ class Buildr
 	# next(err,errord)
 	checkScriptData: (fileFullPath,src,next,config) ->
 		# Prepare
+		log = @log
 		config or= @config
 		errord = false
 
@@ -1192,7 +1269,7 @@ class Buildr
 			return next false, false
 		
 		# Log the file
-		@log "\n#{fileFullPath}:"
+		log 'error', "\n#{fileFullPath}:"
 
 		# Log the errors
 		for error in result.errors
@@ -1209,7 +1286,7 @@ class Buildr
 					"\n\t" + error.evidence.replace(/^\s+/, '')
 				else
 					''
-			@log "\tLine #{error.line}: #{message} #{evidence}\n"
+			log 'warn', "\tLine #{error.line}: #{message} #{evidence}\n"
 		
 		# Forward
 		next false, errord
@@ -1218,8 +1295,11 @@ class Buildr
 	# Check Script File
 	# next(err,errord)
 	checkScriptFile: (fileFullPath,next) ->
+		# Prepare
+		log = @log
+
 		# Log
-		@log "Checking #{fileFullPath}"
+		log 'debug', "Checking #{fileFullPath}"
 
 		# Read
 		fs.readFile fileFullPath, (err,data) =>
@@ -1227,11 +1307,11 @@ class Buildr
 			return next err, false  if err
 
 			# Check
-			@checkScriptData fileFullPath, data.toString(), (err,errord) =>
+			@checkScriptData fileFullPath, data.toString(), (err,errord) ->
 				return next err	 if err
 
 				# Log
-				@log "Checked #{fileFullPath}"
+				log 'debug', "Checked #{fileFullPath}"
 
 				# Forward
 				return next err, errord
