@@ -130,9 +130,10 @@ class Buildr
 
 	# Log
 	log: (args...) =>
-		type = args.shift()
-		args.unshift "[#{@config.name}]"
-		args.unshift type
+		if @config.name
+			type = args.shift()
+			args.unshift "[#{@config.name}]"
+			args.unshift type
 		@logger.log.apply(@logger,args)
 
 	# Watch
