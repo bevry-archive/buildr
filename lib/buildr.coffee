@@ -114,7 +114,7 @@ class Buildr
 			@config.successHandler.call(@) if @config.successHandler
 
 		# Logger
-		if @config.log is true then @config.log = 7
+		if @config.log is true then @config.log = 6
 		@logger or= @config.logger or new caterpillar.Logger
 			transports:
 				level: @config.log or 6
@@ -296,7 +296,7 @@ class Buildr
 						false
 			if @config.compressImages
 				@config.compressImages = false
-		
+
 		# Auto find files?
 		# Not yet implemented
 		if @config.bundleScripts is true
@@ -713,7 +713,10 @@ class Buildr
 				@compressFile config.bundleStylePath, tasks.completer()
 
 		# Handle
-		@forFilesInDirectory(
+		@useOrScan(
+			# Array
+			config.compressScripts
+
 			# Directory
 			config.outPath
 			
@@ -805,10 +808,7 @@ class Buildr
 	useOrScan: (files,parentPath,callback,next) ->
 		# Handle
 		if files is true
-			@forFilesInDir(
-				# Files
-				files
-
+			@forFilesInDirectory(
 				# Directory
 				parentPath
 

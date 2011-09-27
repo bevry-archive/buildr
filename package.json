@@ -52,7 +52,7 @@
 	},
 	"dependencies": {
 		"less-bal": "=1.1.4",
-		"coffee-script": "=1.1.1",
+		"coffee-script": "=1.1.2",
 		"bal-util": "=0.5",
 		"jshint": "=0.2.3",
 		"csslint": "=0.4.0",
@@ -60,7 +60,7 @@
 		"pulverizr-bal": "=0.5.4",
 		"cson": "=0.2.0",
 		"watch-tree": "=0.1.1",
-		"caterpillar": "=0.1.1"
+		"caterpillar": "=0.1.2"
 	},
 	"engines" : {
 		"node": ">=0.4.0"

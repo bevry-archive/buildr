@@ -38,21 +38,15 @@ Before you use Buildr, you must specify some configuration for it. The available
 ``` coffeescript
 {
 	# Options
+	name: null # (name to be outputted in log messages) String or null
 	log: true # (log status updates to console?) true or false
 	watch: false # (automatically rebuild on file change?) true or false
 
 	# Handlers
-	buildHandler: (err) -> # (fired when build completed) function or false
-		if err
-			console.log err
-			throw err
-		console.log 'Building completed\n'
-	rebuildHandler: (err) -> # (fired when rebuild completed) function or false
-		if err
-			console.log err
-			throw err
-		console.log 'ReBuilding completed\n'
-	
+	buildHandler: false # (fired when build completed) function or false
+	rebuildHandler: false # (fired when rebuild completed) function or false
+	successHandler: false # (fired when (re)build completed successfully) function or false
+
 	# Paths
 	srcPath: false # String
 	outPath: false # String or false
@@ -275,6 +269,11 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ## History
 
 ### Changelog
+
+- v0.8 September 27, 2011
+	- Fixed concurrency support
+	- Fixed compression under certain configurations
+	- Added [Caterpillar](https://github.com/balupton/caterpillar.npm) for awesome console logging
 
 - v0.7 August 22, 2011
 	- Added `watch`, `buildHandler` and `rebuildrHandler` options
