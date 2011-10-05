@@ -1,6 +1,6 @@
 {
 	"name": "buildr",
-	"version": "0.8.1",
+	"version": "0.8.2",
 	"description": "The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)",
 	"homepage": "https://github.com/balupton/buildr.npm",
 	"keywords": [
@@ -51,16 +51,16 @@
 		"url" : "http://github.com/balupton/buildr.npm.git"
 	},
 	"dependencies": {
-		"less-bal": "=1.1.4",
-		"coffee-script": "=1.1.2",
-		"bal-util": "=0.5",
-		"jshint": "=0.2.3",
-		"csslint": "=0.4.0",
-		"uglify-js": "=1.0.6",
-		"pulverizr-bal": "=0.6.3",
-		"cson": "=0.2.0",
-		"watch-tree": "=0.1.1",
-		"caterpillar": "=0.1.2"
+		"less-bal": "1.1.x",
+		"coffee-script": "1.1.x",
+		"bal-util": "0.7.x",
+		"jshint": "0.2.x",
+		"csslint": "0.4.x",
+		"uglify-js": "1.0.x",
+		"pulverizr-bal": "0.6.x",
+		"cson": "0.2.x",
+		"watch-tree": "0.1.x",
+		"caterpillar": "0.1.x"
 	},
 	"engines" : {
 		"node": ">=0.4.0"
