@@ -12,5 +12,4 @@ cwd = process.cwd()
 cson.parseFile "#{cwd}/buildr.cson", (err,config) ->
 	throw err if err
 	myBuildr = buildr.createInstance(config)
-	myBuildr.process (err) ->
-		throw err if err
+	myBuildr.process()
