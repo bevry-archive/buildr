@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/balupton/buildr.npm.png)](http://travis-ci.org/balupton/buildr.npm)
 # Welcome to Buildr
 
 The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)
