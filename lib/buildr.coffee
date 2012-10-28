@@ -100,18 +100,20 @@ class Buildr
 		@config = tmp
 
 		# Handlers
-		@config.buildHandler or= (err) =>
+		@config.buildHandler or= (err) ->
 			if err
 				@log 'error', err
 				throw err
 			@log 'info', 'Building completed'
-			@config.successHandler.call(@)  if @config.successHandler
-		@config.rebuildHandler or= (err) =>
+			@config.successHandler.call(@) if @config.successHandler
+		@afterBuild = (err) => @config.buildHandler.call(@,err)
+		@config.rebuildHandler or= (err) ->
 			if err
 				@log 'error', err
 				throw err
 			@log 'info', 'ReBuilding completed'
 			@config.successHandler.call(@) if @config.successHandler
+		@afterRebuild = (err) => @config.rebuildHandler.call(@,err)
 
 		# Logger
 		if @config.log is true then @config.log = 6
@@ -150,7 +152,7 @@ class Buildr
 		# Prepare
 		buildr = @
 		log = @log
-		next or= @config.rebuildHandler or @config.buildHandler
+		next or= @afterRebuild
 
 		# Log
 		log 'debug', 'Setting up watching...'
@@ -186,7 +188,7 @@ class Buildr
 		
 		# Prepare
 		log = @log
-		next or= @config.buildHandler
+		next or= @afterBuild
 
 		# Log
 		log 'info', 'Processing started'
