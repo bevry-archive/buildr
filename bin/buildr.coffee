@@ -1,8 +1,5 @@
 #!/usr/bin/env coffee
 
-# Error
-console.log 'Command line buildr may not currently work due to this bug: https://github.com/balupton/buildr.npm/issues/8'
-
 # Requires
 cson = require 'cson'
 buildr = require __dirname+'/../lib/buildr.coffee'
