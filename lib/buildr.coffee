@@ -178,15 +178,15 @@ class Buildr
 
 	# Process
 	process: (next) ->
+		# Prepare
+		log = @log
+		next or= @config.buildHandler
+
 		# Check
 		if @processing
 			log 'info', 'Processing postponed'
 			return
 		@processing = true
-		
-		# Prepare
-		log = @log
-		next or= @config.buildHandler
 
 		# Log
 		log 'info', 'Processing started'
