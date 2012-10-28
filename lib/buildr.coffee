@@ -392,6 +392,7 @@ class Buildr
 		return next false  unless config.srcLoaderPath
 
 		# Log
+		log = @log
 		log 'debug', "Generating #{config.srcLoaderPath}"
 
 		# Prepare
