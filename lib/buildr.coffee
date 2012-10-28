@@ -669,7 +669,9 @@ class Buildr
 		log 'debug', 'Cleaning outPath'
 		
 		# Delete files to clean
-		for fileFullPath in @filesToClean
+		while @filesToClean.length > 0
+			# Be sure to clean up the array as we go through it because this object gets reused in watch mode.
+			fileFullPath = @filesToClean.shift()
 			log 'debug', "Cleaning #{fileFullPath}"
 			fs.unlink fileFullPath, tasks.completer()
 
