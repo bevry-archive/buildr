@@ -95,8 +95,8 @@ class Buildr
 
 		# Apply configuration
 		tmp = {}
-		tmp[key] = value  for own key,value of @config
-		tmp[key] = value  for own key,value of options
+		tmp[key] = value  for key,value of @config
+		tmp[key] = value  for key,value of options
 		@config = tmp
 
 		# Handlers
@@ -145,7 +145,7 @@ class Buildr
 			@watching = true
 
 		# Requires
-		watchTree = require 'watch-tree'	unless watchTree
+		watchTree = require 'watch-tree-maintained'	unless watchTree
 
 		# Prepare
 		buildr = @
