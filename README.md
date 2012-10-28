@@ -7,10 +7,6 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 
 1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
 
-1. Install [CoffeeScript](http://jashkenas.github.com/coffee-script/)
-		
-		npm install -g coffee-script
-
 1. Install dependencies for image compression
 
 	- On OSX
@@ -77,7 +73,7 @@ Before you use Buildr, you must specify some configuration for it. The available
 }
 ```
 
-The above values are the default values for those options. The settings which are set to `true` will autodect the files for you.
+The above values are the default values for those options. The settings which are set to `true` will auto-detect the files for you.
 
 
 ### Options
@@ -221,8 +217,6 @@ You can feel free to combine any of the configurations above to get something wh
 
 ### As a Command Line Tool
 
-_Note: this option is currently disabled due to [this bug](https://github.com/balupton/buildr.npm/issues/8)_
-
 Within your application folder
 
 1. Install Buildr Globally
@@ -235,6 +229,7 @@ Within your application folder
 
 		buildr
 
+You may specify the filename for configuring by passing -f <filename> or --file <filename> on the command-line.
 
 ### As a Module
 
@@ -269,6 +264,13 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 ## History
 
 ### Changelog
+
+- v0.8.3 October 28, 2012
+  - Feature request #13: specify .cson file at command line
+  - Feature request #15: Macro preprocessor
+  - Fix bugs 8, 19, 20, 21, 23, 25, 27, 28, 30
+  - Use cake to build JavaScript, making buildr easier to run
+  - Updated dependencies to fix several bugs
 
 - v0.8 September 27, 2011
 	- Fixed concurrency support

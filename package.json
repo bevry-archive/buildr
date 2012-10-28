@@ -1,6 +1,6 @@
 {
 	"name": "buildr",
-	"version": "0.8.2",
+	"version": "0.8.3",
 	"description": "The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|Checker)",
 	"homepage": "https://github.com/balupton/buildr.npm",
 	"keywords": [
@@ -28,6 +28,11 @@
 			"name": "Benjamin Lupton",
 			"email": "b@lupton.cc",
 			"web": "http://balupton.com"
+		},
+		{
+			"name": "Brandon Ramirez",
+			"email": "brandon.s.ramirez@gmail.com",
+			"web": "http://www.brandonsramirez.com/"
 		}
 	],
 	"contributors": [
@@ -35,6 +40,11 @@
 			"name": "Benjamin Lupton",
 			"email": "b@lupton.cc",
 			"web": "http://balupton.com"
+		},
+		{
+			"name": "Brandon Ramirez",
+			"email": "brandon.s.ramirez@gmail.com",
+			"web": "http://www.brandonsramirez.com/"
 		}
 	],
 	"bugs": {
