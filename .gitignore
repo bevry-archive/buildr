@@ -1,0 +1,4 @@
+node_modules/
+bin/buildr.js
+lib/buildr.js
+buildr-*.tgz

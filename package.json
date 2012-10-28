@@ -65,11 +65,14 @@
 	"engines" : {
 		"node": ">=0.4.0"
 	},
+	"scripts": {
+		"prepublish": "cake clean build"
+	},
 	"directories": {
 		"lib": "lib"
 	},
 	"bin": {
-		"buildr": "./bin/buildr.coffee"
+		"buildr": "./bin/buildr.js"
 	},
-	"main": "./lib/buildr.coffee"
+	"main": "./lib/buildr.js"
 }

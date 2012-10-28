@@ -1,0 +1,6 @@
+node_modules/
+bin/buildr.coffee
+lib/buildr.coffee
+.gitignore
+Cakefile
+buildr-*.tgz
