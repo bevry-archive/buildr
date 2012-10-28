@@ -4,7 +4,7 @@ path = require 'path'
 util = require 'bal-util'
 coffee = require 'coffee-script'
 less = require 'less'
-pulverizr = require 'pulverizr-bal'
+pulverizr = require 'pulverizr'
 csslint = require('csslint').CSSLint
 jshint = require('jshint').JSHINT
 uglify = require 'uglify-js'
@@ -242,41 +242,31 @@ class Buildr
 		@config.outPath or= @config.srcPath
 
 		# Expand srcPath
-		util.expandPath @config.srcPath, cwd, {}, (err,srcPath) =>
-			return tasks.exit err if err
-			@config.srcPath = srcPath
-			tasks.complete err
+		@config.srcPath = path.resolve @config.srcPath
+		tasks.complete null
 
 		# Expand outPath
-		util.expandPath @config.outPath, cwd, {}, (err,outPath) =>
-			return tasks.exit err if err
-			@config.outPath = outPath
-			tasks.complete err
+		@config.outPath = path.resolve @config.outPath
+		tasks.complete null
 
 		# Expand bundleScriptPath
 		if @config.bundleScriptPath
-			util.expandPath @config.bundleScriptPath, cwd, {}, (err,bundleScriptPath) =>
-				return tasks.exit err if err
-				@config.bundleScriptPath = bundleScriptPath
-				tasks.complete err
+			@config.bundleScriptPath = path.resolve @config.bundleScriptPath
+			tasks.complete null
 		else
 			tasks.complete false
 		
 		# Expand bundleStylePath
 		if @config.bundleStylePath
-			util.expandPath @config.bundleStylePath, cwd, {}, (err,bundleStylePath) =>
-				return tasks.exit err if err
-				@config.bundleStylePath = bundleStylePath
-				tasks.complete err
+			@config.bundleStylePaths = path.resolve @config.bundleStylePath
+			tasks.complete null
 		else
 			tasks.complete false
 
 		# Expand srcLoaderPath
 		if @config.srcLoaderPath
-			util.expandPath @config.srcLoaderPath, cwd, {}, (err,srcLoaderPath) =>
-				return tasks.exit err if err
-				@config.srcLoaderPath = srcLoaderPath
-				tasks.complete err
+			@config.srcLoaderPath = path.resolve @config.srcLoaderPath
+			tasks.complete null
 		else
 			tasks.complete false
 
@@ -402,7 +392,6 @@ class Buildr
 		return next false  unless config.srcLoaderPath
 
 		# Log
-		log = @log
 		log 'debug', "Generating #{config.srcLoaderPath}"
 
 		# Prepare
@@ -772,11 +761,7 @@ class Buildr
 		# Cycle
 		for fileRelativePath in files
 			# Expand filePath
-			((fileRelativePath)=>
-				util.expandPath fileRelativePath, parentPath, {}, (err,fileFullPath) =>
-					return tasks.exit err if err
-					callback fileFullPath, fileRelativePath, tasks.completer()
-			)(fileRelativePath)
+			callback path.resolve(parentPath, fileRelativePath),fileRelativePath, tasks.completer()
 		
 		# Completed
 		true
