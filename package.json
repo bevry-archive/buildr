@@ -60,7 +60,8 @@
 		"pulverizr": "0.7.x",
 		"cson": ">=1.4",
 		"watch-tree-maintained": "0.1.x",
-		"caterpillar": "1.x"
+		"caterpillar": "1.x",
+		"optimist": ">=0.3"
 	},
 	"engines" : {
 		"node": ">=0.4.0"

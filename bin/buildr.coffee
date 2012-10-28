@@ -2,9 +2,18 @@
 
 # Requires
 cson = require 'cson'
-fs = require "fs"
+fs = require 'fs'
+path = require 'path'
 buildr = require __dirname+'/../lib/buildr.coffee'
-cwd = process.cwd()
+optimist = require 'optimist'
+
+# Argument parsing
+argv = optimist.options('file', {
+  alias: 'f',
+  default: 'buildr.cson'
+}).argv;
+
+filename = path.resolve argv.file
 
 #Preprocessors
 preprocessors = [
@@ -17,18 +26,22 @@ preprocessors = [
         new_data
 ]
 data = ''
-fs.readFile "#{cwd}/buildr.cson", (err,d) ->
-    throw err if err
-    data = d.toString()
-    
-    console.log "Preprocessing configuration file..."
-    for p in preprocessors
-        data = p data
-    console.log "Preprocessed."
-    
-    # Parse the config file
-    cson.parse data, (err,config) ->
-        throw err if err
-        myBuildr = buildr.createInstance(config)
-        myBuildr.process (err) ->
+fs.exists filename, (exists) ->
+    if exists
+        fs.readFile filename, (err,d) ->
             throw err if err
+            data = d.toString()
+
+            console.log "Preprocessing configuration file..."
+            for p in preprocessors
+                data = p data
+            console.log "Preprocessed."
+
+            # Parse the config file
+            cson.parse data, (err,config) ->
+                throw err if err
+                myBuildr = buildr.createInstance(config)
+                myBuildr.process (err) ->
+                throw err if err
+    else
+        console.error "Configuration file not found: #{filename}"
