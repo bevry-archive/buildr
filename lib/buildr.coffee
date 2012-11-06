@@ -116,6 +116,7 @@ class Buildr
 		# Logger
 		if @config.log is true then @config.log = 6
 		@logger or= @config.logger or new caterpillar.Logger
+			level: @config.log or 6
 			transports:
 				level: @config.log or 6
 				formatter:
