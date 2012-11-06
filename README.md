@@ -265,6 +265,9 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ### Changelog
 
+- v0.8.4 November 5, 2012
+  - Fix bug 31: Log level debug is always used, regardless of configuration.
+
 - v0.8.3 October 28, 2012
   - Feature request #13: specify .cson file at command line
   - Feature request #15: Macro preprocessor
