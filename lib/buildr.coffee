@@ -529,7 +529,7 @@ class Buildr
 						)
 
 						# Check if less path exists
-						path.exists fileFullPath, (exists) ->
+						fs.exists fileFullPath, (exists) ->
 							# It does
 							if exists
 								# Append source
