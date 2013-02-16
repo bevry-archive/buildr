@@ -4,7 +4,7 @@
 cson = require 'cson'
 fs = require 'fs'
 path = require 'path'
-buildr = require __dirname+'/../lib/buildr.coffee'
+buildr = require __dirname+'/../lib/buildr'
 optimist = require 'optimist'
 
 # Argument parsing
