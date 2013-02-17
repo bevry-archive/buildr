@@ -505,7 +505,7 @@ class Buildr
 			@config.outPath
 			
 			# Callback
-			(fileFullPath,fileRelativePath,next) =>
+			(fileFullPath, fileRelativePath, next) =>
 				# Ensure .less file exists
 				extension = path.extname(fileRelativePath)
 				switch extension
@@ -523,10 +523,7 @@ class Buildr
 						@filesToClean.push fileFullPath
 
 						# Get relative bundled path
-						bundledRelativePath = @getRelativePath(
-							config.bundleStylePath
-							fileFullPath
-						)
+						bundledRelativePath = path.relative path.dirname(path.resolve(config.bundleStylePath)), fileFullPath
 
 						# Check if less path exists
 						fs.exists fileFullPath, (exists) ->
@@ -538,11 +535,16 @@ class Buildr
 							# It doesn't
 							else
 								# Create it
-								util.cp _fileFullPath, fileFullPath, (err) ->
-									return next err	 if err
-									# Append source
-									source += """@import "#{bundledRelativePath}";\n"""
-									next false
+								fs.readFile _fileFullPath, (err, data) ->
+									# Escape Microsoft filter syntax so it will get past the less compiler.
+									# See issue 32 https://github.com/balupton/buildr.npm/issues/32
+									data = data.toString().replace(/filter: ([^~"])(.*)$/gm, "filter: ~\"$1$2\"")
+
+									fs.writeFile fileFullPath, data, (err) ->
+										return next err	 if err
+										# Append source
+										source += """@import "#{bundledRelativePath}";\n"""
+										next false
 					
 					# Less
 					when '.less'
@@ -551,10 +553,7 @@ class Buildr
 							@filesToClean.push fileFullPath
 
 						# Get relative bundled path
-						bundledRelativePath = @getRelativePath(
-							config.bundleStylePath
-							fileFullPath
-						)
+						bundledRelativePath = path.relative path.dirname(path.resolve(config.bundleStylePath)), fileFullPath
 
 						# Append source
 						source += """@import "#{bundledRelativePath}";\n"""
@@ -750,24 +749,6 @@ class Buildr
 
 	# =====================================
 	# Helpers
-
-	# Determine relative path
-	getRelativePath: (srcPath,dstPath) ->
-		srcParts = srcPath.split /[\/\\]/g
-		dstParts = dstPath.split /[\/\\]/g
-
-		outParts = []
-		stillCommon = null
-		for srcPart,i in srcParts
-			if stillCommon is null
-				if srcPart isnt dstParts[i]
-					stillCommon = i
-			else
-				outParts.push '..'
-		for dstPart,i in dstParts[stillCommon..]
-			outParts.push dstPart
-		
-		outPath = outParts.join '/'
 
 	# For each file in an array
 	# callback(fileFullPath,fileRelativePath,next)
