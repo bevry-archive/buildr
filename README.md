@@ -5,7 +5,7 @@ The (Java|Coffee)Script and (CSS|Less) (Builder|Bundler|Packer|Minifier|Merger|C
 
 ## Install
 
-1. [Install Node.js](https://github.com/balupton/node/wiki/Installing-Node.js)
+1. [Install Node.js](http://bevry.me/node/install)
 
 1. Install dependencies for image compression
 
