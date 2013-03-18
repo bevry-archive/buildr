@@ -265,6 +265,14 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ### Changelog
 
+- v0.8.6 March 17, 2013
+  - Replace deprecated path.exists call with fs.exists.
+  - Fix build issue with Cakefile.
+  - Fix issue 32 and 33
+
+- v0.8.5 November 11, 2012
+  - Fix problem with copying of hidden directories like .svn/
+
 - v0.8.4 November 5, 2012
   - Fix bug 31: Log level debug is always used, regardless of configuration.
 
