@@ -42,6 +42,6 @@ fs.exists filename, (exists) ->
                 throw err if err
                 myBuildr = buildr.createInstance(config)
                 myBuildr.process (err) ->
-                throw err if err
+                    throw err if err
     else
         console.error "Configuration file not found: #{filename}"
