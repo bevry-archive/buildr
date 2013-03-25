@@ -13,6 +13,7 @@ pro = uglify.uglify
 cwd = process.cwd()
 watchTree = false
 caterpillar = require 'caterpillar'
+rimraf = require 'rimraf'
 
 # =====================================
 # Prototypes
@@ -346,7 +347,7 @@ class Buildr
 		log 'debug', "Copying #{config.srcPath} to #{config.outPath}"
 
 		# Remove outPath
-		util.rmdir config.outPath, (err) ->
+		rimraf config.outPath, (err) ->
 			return next err	 if err
 
 			# Copy srcPath to outPath

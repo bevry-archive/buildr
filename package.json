@@ -71,7 +71,8 @@
 		"cson": ">=1.4",
 		"watch-tree-maintained": "0.1.x",
 		"caterpillar": "1.x",
-		"optimist": ">=0.3"
+		"optimist": ">=0.3",
+		"rimraf": "2.1.4"
 	},
 	"engines" : {
 		"node": ">=0.4.0"
