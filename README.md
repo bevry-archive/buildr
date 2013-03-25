@@ -265,6 +265,11 @@ Copyright 2011 [Benjamin Arthur Lupton](http://balupton.com)
 
 ### Changelog
 
+- v0.8.7 March 24, 2013
+  - Fix issue 34
+  - Fix syntax error in CLI script which prevents error reporting.
+  - Copy source files recursively again (reverting v0.8.5 fix) which is safe because we switched to rimraf (to fix issue 34).
+
 - v0.8.6 March 17, 2013
   - Replace deprecated path.exists call with fs.exists.
   - Fix build issue with Cakefile.
