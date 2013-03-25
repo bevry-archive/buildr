@@ -351,30 +351,10 @@ class Buildr
 			return next err	 if err
 
 			# Copy srcPath to outPath
-			fs.mkdir config.outPath, (mkdirError) ->
-				return next mkdirError if mkdirError
-
-				fs.readdir config.srcPath, (err, files) ->
-					return next err if err
-
-					copyableFiles = []
-
-					statTasks = new util.Group (groupError) ->
-						copyTasks = new util.Group (groupError) ->
-							log 'debug', "Copied #{config.srcPath} to #{config.outPath}"
-							next err
-
-						copyTasks.total = copyableFiles.length
-						copyableFiles.forEach (file) ->
-							fs.readFile config.srcPath + '/' + file, 'utf8', (err, data) ->
-								fs.writeFile config.outPath + '/' + file, data, 'utf8', copyTasks.completer()
-
-					statTasks.total = files.length
-
-					files.forEach (file) ->
-						fs.stat config.srcPath + '/' + file, (error, stat) ->
-							copyableFiles.push(file) if stat.isFile()
-							statTasks.completer()()
+			util.cpdir config.srcPath, config.outPath, (err) ->
+				# Next
+				log 'debug', "Copied #{config.srcPath} to #{config.outPath}"
+				next err
 	
 		# Completed
 		true
